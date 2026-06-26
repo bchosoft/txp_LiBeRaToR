@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>TXP LiBeRaTor</title>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <!-- Header -->
+            <div class="header">
+                <div class="logo-container">
+                    <img id="logo" alt="BCho Logo" />
+                </div>
+                <div class="title-container">
+                    <h1>TXP LiBeRaTor</h1>
+                    <p id="app-subtitle">Conversor independiente de presets TONEX</p>
+                </div>
+                <div class="header-controls">
+                    <button id="btn-donate" class="donate-btn" title="Invítame a un café y apoya el proyecto">☕ Donar</button>
+                    <button id="btn-help" class="control-btn" title="Ayuda / Help">❓</button>
+                    <div class="lang-selector">
+                        <button id="lang-es" class="lang-btn active" title="Español">
+                            <svg viewBox="0 0 750 500" width="20" height="13" style="border-radius: 1px; display: block;">
+                                <rect width="750" height="500" fill="#c60b1e"/>
+                                <rect width="750" height="250" y="125" fill="#ffc400"/>
+                            </svg>
+                        </button>
+                        <button id="lang-en" class="lang-btn" title="English">
+                            <svg viewBox="0 0 60 30" width="20" height="13" style="border-radius: 1px; display: block;">
+                                <rect width="60" height="30" fill="#012169"/>
+                                <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+                                <path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="2"/>
+                                <path d="M30,0 L30,30 M0,15 L60,15" stroke="#fff" stroke-width="10"/>
+                                <path d="M30,0 L30,30 M0,15 L60,15" stroke="#C8102E" stroke-width="6"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mode Selector Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" id="tab-files">Seleccionar Archivos</button>
+                <button class="tab-btn" id="tab-folder">Seleccionar Carpeta</button>
+            </div>
+
+            <!-- Main Form Section -->
+            <div class="section">
+                <span class="section-label" id="source-label">Presets a convertir</span>
+                
+                <!-- Selector box for Files -->
+                <div class="selector-box" id="file-selector">
+                    <div class="icon">📂</div>
+                    <h3>Elige archivos sueltos</h3>
+                    <p>Haz clic aquí para seleccionar archivos .txp individuales</p>
+                </div>
+
+                <!-- Selector box for Folder (hidden by default) -->
+                <div class="selector-box" id="folder-selector" style="display: none;">
+                    <div class="icon">📁</div>
+                    <h3>Elige una carpeta</h3>
+                    <p>Se procesarán todos los archivos .txp recursivamente</p>
+                </div>
+
+                <!-- Selection Status / Info -->
+                <div id="selection-info" style="display: none;">
+                    <div class="path-display" style="margin-bottom: 10px;">
+                        <span class="path-text" id="selection-path-text">No hay selección</span>
+                    </div>
+                    <div class="file-list" id="selected-files-list" style="display: none;">
+                        <!-- Selected files list goes here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Destination Directory Section -->
+            <div class="section">
+                <span class="section-label">Carpeta de Destino</span>
+                <div class="path-display">
+                    <span class="path-text" id="dest-path-text">No seleccionada</span>
+                    <button class="btn-secondary" id="btn-change-dest">Cambiar...</button>
+                </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="action-bar">
+                <button class="btn-primary" id="btn-convert" disabled>INICIAR CONVERSIÓN BCHO</button>
+            </div>
+
+            <!-- Progress Overlay -->
+            <div class="progress-overlay" id="progress-modal">
+                <div class="progress-header" id="progress-header-section">
+                    <h2 id="progress-title">Procesando presets...</h2>
+                    <p id="progress-subtitle">Preparando archivos</p>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress-bar-container" id="progress-bar-container">
+                    <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                </div>
+
+                <!-- Console Output -->
+                <div class="console-log" id="console-output">
+                    <!-- Log entries -->
+                </div>
+
+                <!-- Success / Completion Card -->
+                <div class="success-card" id="success-card">
+                    <div class="success-icon">✓</div>
+                    <h3>¡Conversión Completada!</h3>
+                    <p id="success-summary">Se han convertido todos los presets con éxito.</p>
+                    <button class="btn-done" id="btn-close-progress">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="help-overlay" id="help-modal">
+        <div class="help-content">
+            <button class="help-close" id="btn-close-help">×</button>
+            <h2 id="help-title">Ayuda - TXP LiBeRaTor</h2>
+            <div class="help-body" id="help-body-text">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Donation Overlay -->
+    <div class="donation-overlay" id="donation-overlay">
+        <div class="donation-card">
+            <button class="donation-close" id="donation-close" title="Cerrar / Close">×</button>
+            <div class="donation-coffee">☕</div>
+            <h2 id="donation-title">Apoya el proyecto · Support the project</h2>
+
+            <div class="donation-text">
+                <p>🇪🇸 Las herramientas usadas para desarrollar esta app <strong>no son gratuitas</strong>. Si te resulta útil, considera una donación. Sin donación, el uso se limita a <strong>3 conversiones por sesión</strong>. Al donar desaparece esta pantalla y <strong>todos los límites</strong>, para siempre, en este equipo.</p>
+                <p>🇬🇧 The tools used to build this app <strong>aren't free</strong>. If you find it useful, please consider donating. Without a donation, usage is limited to <strong>3 conversions per session</strong>. Donating removes this screen and <strong>all limits</strong>, forever, on this computer.</p>
+            </div>
+
+            <div class="donation-token-box">
+                <span class="donation-token-label">Pega este código en el mensaje de tu donación · Paste this code in your donation message:</span>
+                <code id="donation-token">—</code>
+            </div>
+
+            <div class="donation-actions">
+                <button id="donation-donate" class="donate-btn">☕ Donar / Donate</button>
+                <button id="donation-check" class="btn-secondary">Ya he donado / I've donated</button>
+            </div>
+            <p id="donation-status" class="donation-status"></p>
+
+            <div class="donation-countdown" id="donation-countdown"></div>
+
+            <button class="donation-manual-toggle" id="donation-manual-toggle">¿Tienes un código? · Have a code?</button>
+            <div class="donation-manual" id="donation-manual">
+                <span class="donation-token-label">ID de soporte (envíalo si necesitas un código) · Support ID (send it if you need a code):</span>
+                <code id="donation-hwid" class="donation-hwid">—</code>
+                <div class="donation-manual-row">
+                    <input type="text" id="donation-code-input" class="donation-code-input" placeholder="Pega aquí tu código · Paste your code here" />
+                    <button id="donation-apply" class="btn-secondary">Aplicar · Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./src/main.js" type="module"></script>
+</body>
+</html>

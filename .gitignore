@@ -1,0 +1,20 @@
+# Wails / build output
+build/bin/
+
+# Frontend
+frontend/dist/
+frontend/node_modules/
+
+# Go
+*.exe
+*.test
+*.out
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Wails frontend build cache
+frontend/package.json.md5

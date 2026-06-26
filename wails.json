@@ -1,0 +1,19 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "txp_liberator",
+  "outputfilename": "TXP_LiBeRaToR",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "BCHO",
+    "email": "bchosoft@gmail.com"
+  },
+  "info": {
+    "productName": "TXP LiBeRaToR",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright © 2026 Bcho",
+    "comments": "Independent converter for TONEX .txp presets"
+  }
+}
