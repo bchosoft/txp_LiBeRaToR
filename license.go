@@ -180,6 +180,18 @@ func (a *App) GetMonetizationConfig() MonetizationConfig {
 	}
 	a.mu.Unlock()
 
+	a.configMu.Lock()
+	defer a.configMu.Unlock()
+
+	// Double-check if loaded while waiting for configMu
+	a.mu.Lock()
+	if a.monetizationLoaded {
+		cfg := a.monetizationConfig
+		a.mu.Unlock()
+		return cfg
+	}
+	a.mu.Unlock()
+
 	cfg, err := fetchMonetizationConfig()
 	if err != nil {
 		cfg = offlineMonetizationConfig()

@@ -20,6 +20,7 @@ type App struct {
 	ctx context.Context
 
 	mu                 sync.Mutex
+	configMu           sync.Mutex
 	unlocked           bool // cached donation state
 	monetizationLoaded bool
 	monetizationConfig MonetizationConfig
@@ -76,7 +77,9 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-	a.IsUnlocked() // warm the donation-state cache
+	go func() {
+		a.IsUnlocked() // warm the donation-state cache in background
+	}()
 }
 
 type FileSelectionResult struct {
