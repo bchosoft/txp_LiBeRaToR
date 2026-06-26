@@ -44,7 +44,7 @@ const btnCloseHelp = document.getElementById('btn-close-help');
 
 // Donate button
 const btnDonate = document.getElementById('btn-donate');
-const DONATE_URL = 'https://buymeacoffee.com/blackchorima';
+const DONATE_URL = 'https://ko-fi.com/bchosoft';
 
 // Language switch buttons
 const btnLangEs = document.getElementById('lang-es');
@@ -95,7 +95,7 @@ const translations = {
                 <li><strong>Carpeta de salida automática:</strong> Si no especificas una carpeta de destino, se creará una carpeta de forma automática al mismo nivel de la carpeta de origen (o del directorio que contiene los archivos seleccionados) añadiendo el sufijo <code> - Bcho</code> al nombre original.</li>
             </ul>
             <h4>Donación y límites:</h4>
-            <p>Las herramientas usadas para desarrollar esta app no son gratuitas. Por eso, <strong>sin donación el uso está limitado a 3 conversiones por sesión</strong>. Al iniciar la app verás una pantalla con un código; si donas en Buy Me a Coffee <strong>pegando ese código en el mensaje</strong>, se eliminan la pantalla y todos los límites de forma permanente en ese equipo. Después de donar, pulsa <em>«Ya he donado»</em> para activar el desbloqueo.</p>
+            <p>Las herramientas usadas para desarrollar esta app no son gratuitas. Por eso, <strong>sin donación el uso está limitado a 3 conversiones por sesión</strong>. Al iniciar la app verás una pantalla con un código; si donas en Ko-fi <strong>pegando ese código en el mensaje</strong>, se eliminan la pantalla y todos los límites de forma permanente en ese equipo. Después de donar, pulsa <em>«Ya he donado»</em> para activar el desbloqueo.</p>
         `
     },
     en: {
@@ -142,7 +142,7 @@ const translations = {
                 <li><strong>Default Output Folder:</strong> If no destination folder is specified, a new folder will be automatically created in the same directory as the source (either the selected folder or the directory of the selected files), appending the suffix <code> - Bcho</code> to the original name.</li>
             </ul>
             <h4>Donation & limits:</h4>
-            <p>The tools used to build this app aren't free. Therefore, <strong>without a donation usage is limited to 3 conversions per session</strong>. On startup you'll see a screen with a code; if you donate on Buy Me a Coffee <strong>pasting that code in the message</strong>, the screen and all limits are removed permanently on that computer. After donating, click <em>"I've donated"</em> to activate the unlock.</p>
+            <p>The tools used to build this app aren't free. Therefore, <strong>without a donation usage is limited to 3 conversions per session</strong>. On startup you'll see a screen with a code; if you donate on Ko-fi <strong>pasting that code in the message</strong>, the screen and all limits are removed permanently on that computer. After donating, click <em>"I've donated"</em> to activate the unlock.</p>
         `
     }
 };

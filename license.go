@@ -21,7 +21,7 @@ import (
 // Donation / unlock configuration for this app.
 const (
 	licenseServerURL = "https://bcho-donations.bcho.workers.dev"
-	donateURL        = "https://buymeacoffee.com/blackchorima"
+	donateURL        = "https://ko-fi.com/bchosoft"
 
 	appCode        = "txp"           // namespace used by the server when signing
 	appSalt        = "TXP_LiBeRaToR" // makes the hardware id app-specific
