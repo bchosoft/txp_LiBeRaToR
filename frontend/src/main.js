@@ -633,7 +633,7 @@ let licenseInfo = {
     offlineMode: false,
 };
 let countdownTimer = null;
-const COUNTDOWN_SECONDS = 30;
+const COUNTDOWN_SECONDS = 45;
 
 function showDonationOverlay(mode) {
     if (!monetizationPartEnabled('overlay')) return;
