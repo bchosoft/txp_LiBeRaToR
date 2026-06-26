@@ -530,7 +530,7 @@ body {
   background: transparent;
   border: none;
   color: var(--text-secondary);
-  font-size: 24px;
+  font-size: 38px;
   line-height: 1;
   cursor: pointer;
   display: none; /* only shown in "limit" mode */
@@ -605,6 +605,15 @@ body {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-muted);
+}
+
+.countdown-num {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--accent-orange); /* Striking amber color */
+  margin: 0 4px;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .donation-manual-toggle {
@@ -831,4 +840,32 @@ body {
 
 .help-body li {
   margin-bottom: 6px;
+}
+
+.donation-token-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.btn-copy {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-copy:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: var(--border-color-active);
+}
+.btn-copy:active {
+  transform: scale(0.95);
 }

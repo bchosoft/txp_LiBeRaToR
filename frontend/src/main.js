@@ -620,6 +620,29 @@ const donationHwid = document.getElementById('donation-hwid');
 const donationCodeInput = document.getElementById('donation-code-input');
 const donationApply = document.getElementById('donation-apply');
 
+function setupCopyButton(btnId, targetEl) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.onclick = () => {
+        const text = (targetEl.textContent || '').trim();
+        if (!text || text === '—') return;
+        navigator.clipboard.writeText(text).then(() => {
+            const oldHtml = btn.innerHTML;
+            btn.innerHTML = '✓';
+            btn.style.color = '#2bf57e';
+            setTimeout(() => {
+                btn.innerHTML = oldHtml;
+                btn.style.color = '';
+            }, 1500);
+        }).catch(err => {
+            console.error("Clipboard copy failed:", err);
+        });
+    };
+}
+
+setupCopyButton('btn-copy-token', donationToken);
+setupCopyButton('btn-copy-hwid', donationHwid);
+
 let licenseInfo = {
     unlocked: true,
     token: '',
@@ -643,7 +666,7 @@ function showDonationOverlay(mode) {
     donationOverlay.classList.add('active');
     if (mode === 'limit') {
         donationOverlay.classList.add('closable');
-        donationCountdown.innerText = '';
+        donationCountdown.innerHTML = '';
         if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
     } else {
         donationOverlay.classList.remove('closable');
@@ -659,7 +682,7 @@ function hideDonationOverlay() {
 function startCountdown(seconds) {
     let s = seconds;
     const render = () => {
-        donationCountdown.innerText = `Podrás usar la app en ${s} s  ·  You can use the app in ${s} s`;
+        donationCountdown.innerHTML = `Podrás usar la app en <span class="countdown-num">${s}</span> s  ·  You can use the app in <span class="countdown-num">${s}</span> s`;
     };
     render();
     if (countdownTimer) clearInterval(countdownTimer);

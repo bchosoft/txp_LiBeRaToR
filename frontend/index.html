@@ -142,7 +142,10 @@
 
             <div class="donation-token-box">
                 <span class="donation-token-label">Pega este código en el mensaje de tu donación · Paste this code in your donation message:</span>
-                <code id="donation-token">—</code>
+                <div class="donation-token-row">
+                    <code id="donation-token">—</code>
+                    <button id="btn-copy-token" class="btn-copy" title="Copiar / Copy">📋</button>
+                </div>
             </div>
 
             <div class="donation-actions">
@@ -156,7 +159,10 @@
             <button class="donation-manual-toggle" id="donation-manual-toggle">¿Tienes un código? · Have a code?</button>
             <div class="donation-manual" id="donation-manual">
                 <span class="donation-token-label">ID de soporte (envíalo si necesitas un código) · Support ID (send it if you need a code):</span>
-                <code id="donation-hwid" class="donation-hwid">—</code>
+                <div class="donation-token-row" style="margin: 8px 0 12px;">
+                    <code id="donation-hwid" class="donation-hwid" style="flex: 1; margin: 0; text-align: left;">—</code>
+                    <button id="btn-copy-hwid" class="btn-copy" title="Copiar / Copy">📋</button>
+                </div>
                 <div class="donation-manual-row">
                     <input type="text" id="donation-code-input" class="donation-code-input" placeholder="Pega aquí tu código · Paste your code here" />
                     <button id="donation-apply" class="btn-secondary">Aplicar · Apply</button>
