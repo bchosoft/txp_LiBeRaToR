@@ -50,6 +50,12 @@ export namespace main {
 	    hwid: string;
 	    donateUrl: string;
 	    freeLimit: number;
+	    activeLimit: number;
+	    monetizationEnabled: boolean;
+	    donateButton: boolean;
+	    overlay: boolean;
+	    restrictions: boolean;
+	    offlineMode: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new LicenseInfo(source);
@@ -62,6 +68,34 @@ export namespace main {
 	        this.hwid = source["hwid"];
 	        this.donateUrl = source["donateUrl"];
 	        this.freeLimit = source["freeLimit"];
+	        this.activeLimit = source["activeLimit"];
+	        this.monetizationEnabled = source["monetizationEnabled"];
+	        this.donateButton = source["donateButton"];
+	        this.overlay = source["overlay"];
+	        this.restrictions = source["restrictions"];
+	        this.offlineMode = source["offlineMode"];
+	    }
+	}
+	export class MonetizationConfig {
+	    monetizationEnabled: boolean;
+	    donateButton: boolean;
+	    overlay: boolean;
+	    restrictions: boolean;
+	    offlineMode: boolean;
+	    activeLimit: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new MonetizationConfig(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.monetizationEnabled = source["monetizationEnabled"];
+	        this.donateButton = source["donateButton"];
+	        this.overlay = source["overlay"];
+	        this.restrictions = source["restrictions"];
+	        this.offlineMode = source["offlineMode"];
+	        this.activeLimit = source["activeLimit"];
 	    }
 	}
 

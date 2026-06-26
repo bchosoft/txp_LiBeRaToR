@@ -8,6 +8,8 @@ export function CheckDonation():Promise<boolean>;
 
 export function GetLicenseInfo():Promise<main.LicenseInfo>;
 
+export function GetMonetizationConfig():Promise<main.MonetizationConfig>;
+
 export function IsUnlocked():Promise<boolean>;
 
 export function ProcessDroppedPaths(arg1:Array<string>,arg2:string):Promise<main.DropResult>;

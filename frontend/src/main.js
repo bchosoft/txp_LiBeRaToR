@@ -147,6 +147,51 @@ const translations = {
     }
 };
 
+function monetizationActive() {
+    return !!licenseInfo.monetizationEnabled;
+}
+
+function monetizationPartEnabled(part) {
+    if (!monetizationActive()) return false;
+    return licenseInfo[part] !== false;
+}
+
+function visibleHelpBody() {
+    const body = translations[state.lang].helpBody;
+    if (monetizationActive()) return body;
+    return body.replace(/\s*<h4>[^<]*(Donaci|Donation)[\s\S]*$/i, '');
+}
+
+function applyMonetizationUI() {
+    btnDonate.style.display = monetizationPartEnabled('donateButton') ? '' : 'none';
+    if (!monetizationPartEnabled('overlay')) {
+        hideDonationOverlay();
+    }
+    showOfflineWarning(!!licenseInfo.offlineMode);
+}
+
+function offlineWarningText() {
+    return state.lang === 'es'
+        ? 'No se puede conectar con el servidor de control. La app funciona en modo sin conexión, sin pantalla de donación, con límite de 1 conversión por sesión.'
+        : 'The control server cannot be reached. The app is running offline, without donation overlay, limited to 1 conversion per session.';
+}
+
+function showOfflineWarning(show) {
+    let el = document.getElementById('offline-warning');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'offline-warning';
+        el.style.cssText = 'display:none;margin:0 auto 18px;max-width:980px;padding:12px 16px;border:1px solid rgba(255,184,77,.55);border-radius:10px;background:rgba(255,184,77,.12);color:var(--text-primary);font-size:14px;line-height:1.35;';
+        const header = document.querySelector('.header');
+        if (header && header.parentNode) {
+            header.parentNode.insertBefore(el, header.nextSibling);
+        }
+    }
+    if (!el) return;
+    el.innerText = offlineWarningText();
+    el.style.display = show ? 'block' : 'none';
+}
+
 function applyLanguage() {
     const t = translations[state.lang];
     
@@ -193,12 +238,13 @@ function applyLanguage() {
 
     btnDonate.innerText = t.donateBtn;
     btnDonate.title = t.donateTooltip;
+    applyMonetizationUI();
     
     btnLangEs.className = state.lang === 'es' ? 'lang-btn active' : 'lang-btn';
     btnLangEn.className = state.lang === 'en' ? 'lang-btn active' : 'lang-btn';
     
     document.getElementById('help-title').innerText = t.helpTitle;
-    document.getElementById('help-body-text').innerHTML = t.helpBody;
+    document.getElementById('help-body-text').innerHTML = visibleHelpBody();
 }
 
 function switchMode(newMode) {
@@ -371,8 +417,15 @@ btnConvert.addEventListener('click', async () => {
     } catch (err) {
         const errorMsg = err.message || err;
 
+        if (String(errorMsg).includes('OFFLINE_LIMIT')) {
+            progressModal.classList.remove('active');
+            showOfflineWarning(true);
+            alert(offlineWarningText());
+            return;
+        }
+
         // Free-tier limit reached: prompt for a donation instead of a generic error.
-        if (String(errorMsg).includes('DONATION_LIMIT')) {
+        if (monetizationPartEnabled('overlay') && String(errorMsg).includes('DONATION_LIMIT')) {
             progressModal.classList.remove('active');
             showDonationOverlay('limit');
             donationStatus.style.color = 'var(--accent-orange)';
@@ -428,7 +481,12 @@ function openExternal(url) {
 }
 
 // Donate handler (header button)
-btnDonate.addEventListener('click', () => openExternal(DONATE_URL));
+function openDonationPage() {
+    if (!monetizationPartEnabled('donateButton') || !licenseInfo.donateUrl) return;
+    openExternal(licenseInfo.donateUrl);
+}
+
+btnDonate.addEventListener('click', openDonationPage);
 
 // Language switcher handlers
 btnLangEs.addEventListener('click', () => {
@@ -562,11 +620,23 @@ const donationHwid = document.getElementById('donation-hwid');
 const donationCodeInput = document.getElementById('donation-code-input');
 const donationApply = document.getElementById('donation-apply');
 
-let licenseInfo = { unlocked: true, token: '', donateUrl: DONATE_URL, freeLimit: 3 };
+let licenseInfo = {
+    unlocked: true,
+    token: '',
+    donateUrl: '',
+    freeLimit: 3,
+    activeLimit: 0,
+    monetizationEnabled: false,
+    donateButton: false,
+    overlay: false,
+    restrictions: false,
+    offlineMode: false,
+};
 let countdownTimer = null;
 const COUNTDOWN_SECONDS = 30;
 
 function showDonationOverlay(mode) {
+    if (!monetizationPartEnabled('overlay')) return;
     donationToken.innerText = licenseInfo.token || '—';
     donationHwid.innerText = licenseInfo.hwid || '—';
     donationStatus.innerText = '';
@@ -614,7 +684,7 @@ function unlockSuccess() {
     setTimeout(hideDonationOverlay, 1800);
 }
 
-donationDonate.addEventListener('click', () => openExternal(licenseInfo.donateUrl || DONATE_URL));
+donationDonate.addEventListener('click', openDonationPage);
 donationClose.addEventListener('click', hideDonationOverlay);
 
 donationManualToggle.addEventListener('click', () => donationManual.classList.toggle('open'));
@@ -658,9 +728,14 @@ donationCheck.addEventListener('click', async () => {
 // Notify when some files were skipped because of the free limit.
 if (window.runtime) {
     window.runtime.EventsOn('limit-info', (info) => {
+        if (!monetizationPartEnabled('restrictions')) return;
         if (info && info.skipped) {
             appendLog(
-                state.lang === 'es'
+                info.offline
+                    ? (state.lang === 'es'
+                        ? `[SIN CONEXIÓN] Se omitieron ${info.skipped} archivo(s). En modo sin conexión el límite es ${info.limit}/sesión.`
+                        : `[OFFLINE] Skipped ${info.skipped} file(s). Offline mode is limited to ${info.limit}/session.`)
+                    : state.lang === 'es'
                     ? `[LÍMITE] Se omitieron ${info.skipped} archivo(s) por el límite gratuito (${info.limit}/sesión). Dona para uso ilimitado.`
                     : `[LIMIT] Skipped ${info.skipped} file(s) due to the free limit (${info.limit}/session). Donate for unlimited use.`,
                 'error'
@@ -674,9 +749,12 @@ async function initLicense() {
         licenseInfo = await GetLicenseInfo();
     } catch (e) {
         console.error(e);
+        licenseInfo = { ...licenseInfo, monetizationEnabled: false, donateButton: false, overlay: false, restrictions: false };
+        applyMonetizationUI();
         return; // fail open: never block the app on a license read error
     }
-    if (!licenseInfo.unlocked) {
+    applyMonetizationUI();
+    if (monetizationPartEnabled('overlay') && !licenseInfo.unlocked) {
         showDonationOverlay('startup');
         // In case they already donated on a previous run/device session, auto-check.
         CheckDonation().then((ok) => { if (ok) unlockSuccess(); }).catch(() => {});

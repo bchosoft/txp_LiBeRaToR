@@ -114,16 +114,99 @@ func saveLicense(sigB64 string) error {
 
 // LicenseInfo is returned to the frontend to drive the overlay.
 type LicenseInfo struct {
-	Unlocked  bool   `json:"unlocked"`
-	Token     string `json:"token"`
-	Hwid      string `json:"hwid"` // full support id (for manual/emergency codes)
-	DonateURL string `json:"donateUrl"`
-	FreeLimit int    `json:"freeLimit"`
+	Unlocked            bool   `json:"unlocked"`
+	Token               string `json:"token"`
+	Hwid                string `json:"hwid"` // full support id (for manual/emergency codes)
+	DonateURL           string `json:"donateUrl"`
+	FreeLimit           int    `json:"freeLimit"`
+	ActiveLimit         int    `json:"activeLimit"`
+	MonetizationEnabled bool   `json:"monetizationEnabled"`
+	DonateButton        bool   `json:"donateButton"`
+	Overlay             bool   `json:"overlay"`
+	Restrictions        bool   `json:"restrictions"`
+	OfflineMode         bool   `json:"offlineMode"`
+}
+
+type MonetizationConfig struct {
+	MonetizationEnabled bool `json:"monetizationEnabled"`
+	DonateButton        bool `json:"donateButton"`
+	Overlay             bool `json:"overlay"`
+	Restrictions        bool `json:"restrictions"`
+	OfflineMode         bool `json:"offlineMode"`
+	ActiveLimit         int  `json:"activeLimit"`
+}
+
+func disabledMonetizationConfig() MonetizationConfig {
+	return MonetizationConfig{}
+}
+
+func offlineMonetizationConfig() MonetizationConfig {
+	return MonetizationConfig{
+		Restrictions: true,
+		OfflineMode:  true,
+		ActiveLimit:  1,
+	}
+}
+
+func fetchMonetizationConfig() (MonetizationConfig, error) {
+	u := licenseServerURL + "/config?app=" + appCode
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Get(u)
+	if err != nil {
+		return disabledMonetizationConfig(), err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return disabledMonetizationConfig(), errors.New("config server unavailable")
+	}
+	body, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+
+	var cfg MonetizationConfig
+	if err := json.Unmarshal(body, &cfg); err != nil {
+		return disabledMonetizationConfig(), errors.New("respuesta de configuracion no valida")
+	}
+	if cfg.Restrictions {
+		cfg.ActiveLimit = freeLimit
+	}
+	return cfg, nil
+}
+
+func (a *App) GetMonetizationConfig() MonetizationConfig {
+	a.mu.Lock()
+	if a.monetizationLoaded {
+		cfg := a.monetizationConfig
+		a.mu.Unlock()
+		return cfg
+	}
+	a.mu.Unlock()
+
+	cfg, err := fetchMonetizationConfig()
+	if err != nil {
+		cfg = offlineMonetizationConfig()
+	}
+
+	a.mu.Lock()
+	a.monetizationConfig = cfg
+	a.monetizationLoaded = true
+	a.mu.Unlock()
+	return cfg
 }
 
 // GetLicenseInfo reports the current unlock state plus the donation token.
 func (a *App) GetLicenseInfo() LicenseInfo {
-	info := LicenseInfo{DonateURL: donateURL, FreeLimit: freeLimit}
+	cfg := a.GetMonetizationConfig()
+	info := LicenseInfo{
+		FreeLimit:           freeLimit,
+		ActiveLimit:         cfg.ActiveLimit,
+		MonetizationEnabled: cfg.MonetizationEnabled,
+		DonateButton:        cfg.DonateButton,
+		Overlay:             cfg.Overlay,
+		Restrictions:        cfg.Restrictions,
+		OfflineMode:         cfg.OfflineMode,
+	}
+	if cfg.MonetizationEnabled && cfg.DonateButton {
+		info.DonateURL = donateURL
+	}
 	info.Unlocked = a.IsUnlocked()
 	if h, err := hardwareID(); err == nil {
 		info.Token = donationToken(h)
@@ -157,6 +240,9 @@ func (a *App) ApplyCode(code string) (bool, error) {
 
 // IsUnlocked returns whether a valid donation license exists for this machine.
 func (a *App) IsUnlocked() bool {
+	if !a.GetMonetizationConfig().MonetizationEnabled {
+		return true
+	}
 	a.mu.Lock()
 	if a.unlocked {
 		a.mu.Unlock()
@@ -173,6 +259,9 @@ func (a *App) IsUnlocked() bool {
 // CheckDonation asks the server whether this machine's token has paid. On
 // success it stores the signed license locally and unlocks the app.
 func (a *App) CheckDonation() (bool, error) {
+	if !a.GetMonetizationConfig().MonetizationEnabled {
+		return true, nil
+	}
 	if a.IsUnlocked() {
 		return true, nil
 	}

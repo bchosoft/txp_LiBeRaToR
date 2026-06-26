@@ -14,6 +14,10 @@ export function GetLicenseInfo() {
   return window['go']['main']['App']['GetLicenseInfo']();
 }
 
+export function GetMonetizationConfig() {
+  return window['go']['main']['App']['GetMonetizationConfig']();
+}
+
 export function IsUnlocked() {
   return window['go']['main']['App']['IsUnlocked']();
 }

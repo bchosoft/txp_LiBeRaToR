@@ -19,31 +19,45 @@ import (
 type App struct {
 	ctx context.Context
 
-	mu              sync.Mutex
-	unlocked        bool // cached donation state
-	conversionsDone int  // successful conversions used this session (free tier)
+	mu                 sync.Mutex
+	unlocked           bool // cached donation state
+	monetizationLoaded bool
+	monetizationConfig MonetizationConfig
+	conversionsDone    int // successful conversions used this session (free tier)
 }
 
 // errDonationLimit is returned when the free per-session limit is exhausted.
 // The frontend detects this sentinel to prompt for a donation.
 var errDonationLimit = errors.New("DONATION_LIMIT")
+var errOfflineLimit = errors.New("OFFLINE_LIMIT")
 
 // allowedCount returns how many of n items may be processed now. When the app
 // is unlocked it is always n; otherwise it is capped by the remaining free uses.
-func (a *App) allowedCount(n int) (allowed int, locked bool) {
-	if a.IsUnlocked() {
-		return n, false
+func (a *App) allowedCount(n int) (allowed int, locked bool, limit int, offline bool) {
+	cfg := a.GetMonetizationConfig()
+	if !cfg.Restrictions {
+		return n, false, 0, false
+	}
+	if !cfg.OfflineMode && a.IsUnlocked() {
+		return n, false, 0, false
+	}
+	if cfg.OfflineMode && checkUnlocked() {
+		return n, false, 0, false
+	}
+	limit = cfg.ActiveLimit
+	if limit <= 0 {
+		limit = freeLimit
 	}
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	remaining := freeLimit - a.conversionsDone
+	remaining := limit - a.conversionsDone
 	if remaining < 0 {
 		remaining = 0
 	}
 	if n > remaining {
 		n = remaining
 	}
-	return n, true
+	return n, true, limit, cfg.OfflineMode
 }
 
 // addConversions records successful conversions against the free-tier counter.
@@ -206,8 +220,11 @@ func (a *App) ProcessFiles(files []string, destDir string) (int, error) {
 	}
 
 	// Aplicar límite gratuito por sesión si no hay donación.
-	allowed, locked := a.allowedCount(len(files))
+	allowed, locked, limit, offline := a.allowedCount(len(files))
 	if locked && allowed == 0 {
+		if offline {
+			return 0, errOfflineLimit
+		}
 		return 0, errDonationLimit
 	}
 	var skipped int
@@ -258,7 +275,7 @@ func (a *App) ProcessFiles(files []string, destDir string) (int, error) {
 		a.addConversions(successCount)
 		if skipped > 0 {
 			wruntime.EventsEmit(a.ctx, "limit-info", map[string]interface{}{
-				"skipped": skipped, "limit": freeLimit,
+				"skipped": skipped, "limit": limit, "offline": offline,
 			})
 		}
 	}
@@ -292,8 +309,11 @@ func (a *App) ProcessFolder(srcDir string, destDir string) (int, error) {
 	}
 
 	// Aplicar límite gratuito por sesión si no hay donación.
-	allowed, locked := a.allowedCount(len(txpFiles))
+	allowed, locked, limit, offline := a.allowedCount(len(txpFiles))
 	if locked && allowed == 0 {
+		if offline {
+			return 0, errOfflineLimit
+		}
 		return 0, errDonationLimit
 	}
 	var skipped int
@@ -366,7 +386,7 @@ func (a *App) ProcessFolder(srcDir string, destDir string) (int, error) {
 		a.addConversions(successCount)
 		if skipped > 0 {
 			wruntime.EventsEmit(a.ctx, "limit-info", map[string]interface{}{
-				"skipped": skipped, "limit": freeLimit,
+				"skipped": skipped, "limit": limit, "offline": offline,
 			})
 		}
 	}
