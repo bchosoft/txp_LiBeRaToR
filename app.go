@@ -42,9 +42,6 @@ func (a *App) allowedCount(n int) (allowed int, locked bool, limit int, offline 
 	if !cfg.OfflineMode && a.IsUnlocked() {
 		return n, false, 0, false
 	}
-	if cfg.OfflineMode && checkUnlocked() {
-		return n, false, 0, false
-	}
 	limit = cfg.ActiveLimit
 	if limit <= 0 {
 		limit = freeLimit
