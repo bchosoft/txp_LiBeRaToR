@@ -10,13 +10,14 @@ import (
 )
 
 const (
-	txpGUIDOff       = 0x26
-	txpModelNameOff  = 0x34ad
-	txpPresetGUIDOff = 0x09
-	txpUserGenOff    = 0x36
-	txpIKGenOff      = 0x3a
-	txpModelOff      = 0x61
-	txpModelLen      = 5196
+	txpGUIDOff         = 0x26
+	txpModelNameOff    = 0x34ad
+	txpPresetGUIDOff   = 0x09
+	txpUserGenOff      = 0x36
+	txpIKGenOff        = 0x3a
+	txpModelOff        = 0x61
+	txpModelLen        = 5196
+	txpModelVariantOff = 0x04
 )
 
 // ConvertTXP descifra el .txp, modifica el GUID determinísticamente a BCho
@@ -48,15 +49,16 @@ func ConvertTXP(raw []byte) ([]byte, error) {
 	// Byte en 0x3a: 0 (IKGenerated = 0)
 	pt[txpIKGenOff] = 0
 
-	// 3. Brute force en los últimos 4 bytes del modelo para lograr un MD5 que termine en 0xBC 0x00
+	// 3. Brute force en un campo inicial reservado del modelo para lograr un MD5 que termine en 0xBC 0x00.
+	// Evitamos tocar la cola del bloque, que contiene coeficientes del modelo y puede provocar ruidos al cambiar.
 	modelBytes := pt[txpModelOff : txpModelOff+txpModelLen]
 	var md5Hash [16]byte
 	found := false
 	for i := uint32(0); i < 16777216; i++ {
-		modelBytes[txpModelLen-4] = byte(i)
-		modelBytes[txpModelLen-3] = byte(i >> 8)
-		modelBytes[txpModelLen-2] = byte(i >> 16)
-		modelBytes[txpModelLen-1] = byte(i >> 24)
+		modelBytes[txpModelVariantOff+0] = byte(i)
+		modelBytes[txpModelVariantOff+1] = byte(i >> 8)
+		modelBytes[txpModelVariantOff+2] = byte(i >> 16)
+		modelBytes[txpModelVariantOff+3] = byte(i >> 24)
 
 		md5Hash = md5.Sum(modelBytes)
 		if md5Hash[14] == 0xBC && md5Hash[15] == 0x00 {

@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"bytes"
 	"os"
 	"strings"
 	"testing"
@@ -24,6 +25,16 @@ func TestConvertTXP(t *testing.T) {
 	}
 
 	// Descifrar el resultado para verificarlo
+	origPT, err := crypto.DecodeTXP(inputData)
+	if err != nil {
+		t.Fatalf("DecodeTXP del original falló: %v", err)
+	}
+	origPT, err = crypto.Decrypt(origPT)
+	if err != nil {
+		t.Fatalf("Decrypt del original falló: %v", err)
+	}
+	origPT = crypto.Unpad(origPT)
+
 	pt, err := crypto.DecodeTXP(outputData)
 	if err != nil {
 		t.Fatalf("DecodeTXP del resultado falló: %v", err)
@@ -52,5 +63,14 @@ func TestConvertTXP(t *testing.T) {
 	modelName := readStrTag(pt, txpModelNameOff, 33)
 	if !strings.HasSuffix(modelName, " BCho") {
 		t.Errorf("El nombre del modelo no tiene el sufijo BCho: %q", modelName)
+	}
+
+	// 3. Verificar que la variante solo toca el campo reservado inicial del modelo,
+	// no la cola de coeficientes que puede provocar ruidos al cambiar presets.
+	origModel := origPT[txpModelOff : txpModelOff+txpModelLen]
+	newModel := pt[txpModelOff : txpModelOff+txpModelLen]
+	if !bytes.Equal(origModel[:txpModelVariantOff], newModel[:txpModelVariantOff]) ||
+		!bytes.Equal(origModel[txpModelVariantOff+4:], newModel[txpModelVariantOff+4:]) {
+		t.Errorf("La conversión BCho tocó bytes del modelo fuera del campo de variante")
 	}
 }

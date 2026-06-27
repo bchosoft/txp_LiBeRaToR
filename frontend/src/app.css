@@ -575,6 +575,29 @@ body {
   color: var(--text-muted);
   margin-bottom: 8px;
 }
+.donation-token-label-important {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.donation-token-label-important span {
+  display: block;
+}
+.donation-token-label-es {
+  animation: donation-token-label-blink-es 1s steps(1, end) infinite;
+}
+.donation-token-label-en {
+  animation: donation-token-label-blink-en 1s steps(1, end) infinite;
+}
+@keyframes donation-token-label-blink-es {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+@keyframes donation-token-label-blink-en {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
 #donation-token {
   font-family: 'Courier New', Courier, monospace;
   font-size: 28px;
@@ -668,7 +691,106 @@ body {
 }
 .donation-code-input:focus { border-color: var(--accent-orange); }
 
-/* Donate (Buy me a coffee) button */
+/* Donation reminder */
+.reminder-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(10, 7, 5, 0.68);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.reminder-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.reminder-card {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  padding: 34px 38px 28px;
+  text-align: center;
+  background: var(--bg-secondary);
+  border: 1px solid rgba(255, 123, 0, 0.42);
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 123, 0, 0.18);
+}
+
+.reminder-coffee {
+  margin-bottom: 10px;
+  font-size: 48px;
+}
+
+.reminder-text {
+  margin-bottom: 24px;
+  color: var(--accent-orange);
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.5;
+  animation: reminder-blink 1s steps(1, end) infinite;
+}
+
+.reminder-countdown {
+  min-height: 24px;
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.reminder-close-hint {
+  min-height: 24px;
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.reminder-close-hint.active {
+  opacity: 1;
+}
+
+.reminder-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  display: none;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 32px;
+  line-height: 1;
+  cursor: pointer;
+  outline: none;
+}
+
+.reminder-close-btn.visible {
+  display: flex;
+}
+
+.reminder-close-btn:hover {
+  color: var(--error-red);
+}
+
+@keyframes reminder-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+/* Donate button */
 .donate-btn {
   background: linear-gradient(135deg, #ffd54f 0%, #ff9800 55%, #ff6f00 100%);
   color: #3a2200;

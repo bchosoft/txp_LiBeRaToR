@@ -17,9 +17,10 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "TXP LiBeRaToR by Bcho",
-		Width:  800,
-		Height: 600,
+		Title:            "TXP LiBeRaToR by Bcho",
+		Width:            800,
+		Height:           600,
+		WindowStartState: options.Maximised,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

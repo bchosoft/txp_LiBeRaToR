@@ -18,7 +18,7 @@
                     <p id="app-subtitle">Conversor independiente de presets TONEX</p>
                 </div>
                 <div class="header-controls">
-                    <button id="btn-donate" class="donate-btn" title="Invítame a un café y apoya el proyecto" style="display: none;">☕ Donar</button>
+                    <button id="btn-donate" class="donate-btn" title="Apoya el proyecto en Ko-fi" style="display: none;">☕ Donar</button>
                     <button id="btn-help" class="control-btn" title="Ayuda / Help">❓</button>
                     <div class="lang-selector">
                         <button id="lang-es" class="lang-btn active" title="Español">
@@ -141,7 +141,10 @@
             </div>
 
             <div class="donation-token-box">
-                <span class="donation-token-label">Pega este código en el mensaje de tu donación · Paste this code in your donation message:</span>
+                <span class="donation-token-label donation-token-label-important">
+                    <span class="donation-token-label-es">IMPORTANTE: Pega este código en el mensaje de tu donación</span>
+                    <span class="donation-token-label-en">IMPORTANT: Paste this code in your donation message</span>
+                </span>
                 <div class="donation-token-row">
                     <code id="donation-token">—</code>
                     <button id="btn-copy-token" class="btn-copy" title="Copiar / Copy">📋</button>
@@ -168,6 +171,17 @@
                     <button id="donation-apply" class="btn-secondary">Aplicar · Apply</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Donation reminder -->
+    <div class="reminder-overlay" id="reminder-overlay">
+        <div class="reminder-card">
+            <div class="reminder-coffee">☕</div>
+            <div id="reminder-text" class="reminder-text"></div>
+            <div id="reminder-countdown" class="reminder-countdown"></div>
+            <div id="reminder-close-hint" class="reminder-close-hint"></div>
+            <button id="reminder-close" class="reminder-close-btn" disabled aria-label="Cerrar">×</button>
         </div>
     </div>
 

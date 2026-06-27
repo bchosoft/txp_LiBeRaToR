@@ -124,15 +124,15 @@ wails build
 
 ## ☕ Apoya el proyecto / Support the project
 
-Si esta herramienta te resulta útil, puedes invitarme a un café. ¡Gracias por
-apoyar el desarrollo!
+Si esta herramienta te resulta útil, puedes apoyar el proyecto en Ko-fi.
+¡Gracias por apoyar el desarrollo!
 
-If you find this tool useful, you can buy me a coffee. Thanks for supporting the
+If you find this tool useful, you can support the project on Ko-fi. Thanks for supporting the
 development!
 
 <p align="center">
   <a href="https://ko-fi.com/bchosoft">
-    <img src="https://img.shields.io/badge/%E2%98%95-Inv%C3%ADtame%20a%20un%20caf%C3%A9%20%2F%20Buy%20me%20a%20coffee-ff9800?style=for-the-badge" alt="Ko-fi">
+    <img src="https://img.shields.io/badge/%E2%98%95-Apoya%20en%20Ko--fi-ff9800?style=for-the-badge" alt="Ko-fi">
   </a>
 </p>
 

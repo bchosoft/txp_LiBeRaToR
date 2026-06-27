@@ -79,7 +79,11 @@ const translations = {
         logSuccess: (file) => `[OK] ${file} -> Liberado con éxito`,
         logError: (file, err) => `[ERROR] ${file}: ${err}`,
         donateBtn: '☕ Donar',
-        donateTooltip: 'Invítame a un café y apoya el proyecto',
+        donateTooltip: 'Apoya el proyecto en Ko-fi',
+        reminderMsg: 'Recuerda que por una contribución mínima de 2 euros puedes tener la versión completa. ;-)',
+        reminderCloseIn: (s) => `Cerrar en ${s} s`,
+        reminderCloseBtn: 'Cerrar',
+        reminderCanClose: 'Ya puedes cerrar esta ventana',
         successTitle: '¡Liberación Completada!',
         successSummaryFiles: (count, total, dest) => `Se han procesado ${count} de ${total} archivos correctamente.\nDestino: ${dest}`,
         successSummaryFolder: (count, dest) => `Se han procesado ${count} archivos .txp correctamente.\nDestino: ${dest}`,
@@ -126,7 +130,11 @@ const translations = {
         logSuccess: (file) => `[OK] ${file} -> Liberated successfully`,
         logError: (file, err) => `[ERROR] ${file}: ${err}`,
         donateBtn: '☕ Donate',
-        donateTooltip: 'Buy me a coffee and support the project',
+        donateTooltip: 'Support the project on Ko-fi',
+        reminderMsg: 'Remember that for a minimum contribution of €2 you can get the full version. ;-)',
+        reminderCloseIn: (s) => `Close in ${s} s`,
+        reminderCloseBtn: 'Close',
+        reminderCanClose: 'You can now close this window',
         successTitle: 'Liberation Completed!',
         successSummaryFiles: (count, total, dest) => `Processed ${count} of ${total} files successfully.\nDestination: ${dest}`,
         successSummaryFolder: (count, dest) => `Processed ${count} .txp files successfully.\nDestination: ${dest}`,
@@ -156,6 +164,11 @@ function monetizationPartEnabled(part) {
     return licenseInfo[part] !== false;
 }
 
+function restrictionsActive() {
+    return !!licenseInfo.offlineMode
+        || (monetizationPartEnabled('restrictions') && !licenseInfo.unlocked);
+}
+
 function visibleHelpBody() {
     const body = translations[state.lang].helpBody;
     if (monetizationActive()) return body;
@@ -166,6 +179,9 @@ function applyMonetizationUI() {
     btnDonate.style.display = monetizationPartEnabled('donateButton') ? '' : 'none';
     if (!monetizationPartEnabled('overlay')) {
         hideDonationOverlay();
+    }
+    if (!restrictionsActive()) {
+        stopReminder();
     }
     showOfflineWarning(!!licenseInfo.offlineMode);
 }
@@ -245,6 +261,15 @@ function applyLanguage() {
     
     document.getElementById('help-title').innerText = t.helpTitle;
     document.getElementById('help-body-text').innerHTML = visibleHelpBody();
+
+    if (reminderOverlay && reminderOverlay.classList.contains('active')) {
+        reminderText.innerText = t.reminderMsg;
+        if (reminderCloseHint && !reminderClose.disabled) {
+            reminderCloseHint.innerText = t.reminderCanClose;
+            reminderClose.title = t.reminderCloseBtn;
+            reminderClose.setAttribute('aria-label', t.reminderCloseBtn);
+        }
+    }
 }
 
 function switchMode(newMode) {
@@ -619,6 +644,11 @@ const donationManual = document.getElementById('donation-manual');
 const donationHwid = document.getElementById('donation-hwid');
 const donationCodeInput = document.getElementById('donation-code-input');
 const donationApply = document.getElementById('donation-apply');
+const reminderOverlay = document.getElementById('reminder-overlay');
+const reminderText = document.getElementById('reminder-text');
+const reminderCountdownText = document.getElementById('reminder-countdown');
+const reminderCloseHint = document.getElementById('reminder-close-hint');
+const reminderClose = document.getElementById('reminder-close');
 
 function setupCopyButton(btnId, targetEl) {
     const btn = document.getElementById(btnId);
@@ -657,6 +687,10 @@ let licenseInfo = {
 };
 let countdownTimer = null;
 const COUNTDOWN_SECONDS = 45;
+const REMINDER_INTERVAL_MS = 5 * 60 * 1000;
+const REMINDER_CLOSE_DELAY = 10;
+let reminderTimer = null;
+let reminderCountdown = null;
 
 function showDonationOverlay(mode) {
     if (!monetizationPartEnabled('overlay')) return;
@@ -677,6 +711,116 @@ function showDonationOverlay(mode) {
 function hideDonationOverlay() {
     donationOverlay.classList.remove('active');
     if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+}
+
+function scheduleReminder() {
+    if (reminderTimer) clearTimeout(reminderTimer);
+    reminderTimer = setTimeout(maybeShowReminder, REMINDER_INTERVAL_MS);
+}
+
+function stopReminder() {
+    if (reminderTimer) {
+        clearTimeout(reminderTimer);
+        reminderTimer = null;
+    }
+    if (reminderCountdown) {
+        clearInterval(reminderCountdown);
+        reminderCountdown = null;
+    }
+    if (reminderOverlay) {
+        reminderOverlay.classList.remove('active');
+    }
+    if (reminderCountdownText) {
+        reminderCountdownText.innerText = '';
+    }
+    if (reminderCloseHint) {
+        reminderCloseHint.innerText = '';
+        reminderCloseHint.classList.remove('active');
+    }
+    if (reminderClose) {
+        reminderClose.classList.remove('visible');
+        reminderClose.disabled = true;
+    }
+}
+
+function maybeShowReminder() {
+    if (!restrictionsActive()) {
+        stopReminder();
+        return;
+    }
+    if (
+        state.processing
+        || (donationOverlay && donationOverlay.classList.contains('active'))
+        || (progressModal && progressModal.classList.contains('active'))
+        || (helpModal && helpModal.classList.contains('active'))
+        || (reminderOverlay && reminderOverlay.classList.contains('active'))
+    ) {
+        scheduleReminder();
+        return;
+    }
+    showReminder();
+}
+
+function showReminder() {
+    if (!reminderOverlay || !reminderText || !reminderCountdownText || !reminderCloseHint || !reminderClose) {
+        scheduleReminder();
+        return;
+    }
+    reminderText.innerText = translations[state.lang].reminderMsg;
+    reminderCloseHint.innerText = '';
+    reminderCloseHint.classList.remove('active');
+    reminderClose.classList.remove('visible');
+    reminderClose.disabled = true;
+    reminderOverlay.classList.add('active');
+
+    let seconds = REMINDER_CLOSE_DELAY;
+    const render = () => {
+        const current = translations[state.lang];
+        reminderCountdownText.innerText = current.reminderCloseIn(seconds);
+    };
+    render();
+
+    if (reminderCountdown) clearInterval(reminderCountdown);
+    reminderCountdown = setInterval(() => {
+        seconds--;
+        if (seconds <= 0) {
+            clearInterval(reminderCountdown);
+            reminderCountdown = null;
+            reminderCountdownText.innerText = '';
+            reminderCloseHint.innerText = translations[state.lang].reminderCanClose;
+            reminderCloseHint.classList.add('active');
+            reminderClose.disabled = false;
+            reminderClose.title = translations[state.lang].reminderCloseBtn;
+            reminderClose.setAttribute('aria-label', translations[state.lang].reminderCloseBtn);
+            reminderClose.classList.add('visible');
+        } else {
+            render();
+        }
+    }, 1000);
+}
+
+function hideReminder() {
+    if (reminderOverlay) {
+        reminderOverlay.classList.remove('active');
+    }
+    if (reminderCountdownText) {
+        reminderCountdownText.innerText = '';
+    }
+    if (reminderCloseHint) {
+        reminderCloseHint.innerText = '';
+        reminderCloseHint.classList.remove('active');
+    }
+    if (reminderClose) {
+        reminderClose.classList.remove('visible');
+        reminderClose.disabled = true;
+    }
+    if (reminderCountdown) {
+        clearInterval(reminderCountdown);
+        reminderCountdown = null;
+    }
+    if (restrictionsActive()) {
+        scheduleReminder();
+    }
 }
 
 function startCountdown(seconds) {
@@ -700,6 +844,7 @@ function startCountdown(seconds) {
 
 function unlockSuccess() {
     licenseInfo.unlocked = true;
+    stopReminder();
     if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
     donationOverlay.classList.add('closable');
     donationStatus.style.color = 'var(--success-green)';
@@ -709,6 +854,11 @@ function unlockSuccess() {
 
 donationDonate.addEventListener('click', openDonationPage);
 donationClose.addEventListener('click', hideDonationOverlay);
+reminderClose.addEventListener('click', () => {
+    if (!reminderClose.disabled) {
+        hideReminder();
+    }
+});
 
 donationManualToggle.addEventListener('click', () => donationManual.classList.toggle('open'));
 
@@ -774,9 +924,11 @@ async function initLicense() {
         console.error(e);
         licenseInfo = { ...licenseInfo, monetizationEnabled: false, donateButton: false, overlay: false, restrictions: false };
         applyMonetizationUI();
+        scheduleReminder();
         return; // fail open: never block the app on a license read error
     }
     applyMonetizationUI();
+    scheduleReminder();
     if (monetizationPartEnabled('overlay') && !licenseInfo.unlocked) {
         showDonationOverlay('startup');
         // In case they already donated on a previous run/device session, auto-check.
