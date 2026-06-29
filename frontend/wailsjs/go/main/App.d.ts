@@ -23,3 +23,5 @@ export function SelectDestFolder():Promise<string>;
 export function SelectFiles():Promise<main.FileSelectionResult>;
 
 export function SelectFolder():Promise<main.FolderSelectionResult>;
+
+export function SetLanguage(arg1:string):Promise<void>;

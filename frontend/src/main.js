@@ -1,5 +1,6 @@
 import './style.css';
 import './app.css';
+import { languageStorageKey, normalizeLang, translations } from './i18n.js';
 
 import logo from './assets/images/logo-universal.png';
 import { SelectFiles, SelectFolder, SelectDestFolder, ProcessFiles, ProcessFolder, ProcessDroppedPaths, GetLicenseInfo, CheckDonation, ApplyCode } from '../wailsjs/go/main/App';
@@ -13,7 +14,7 @@ let state = {
     selectedFolder: '',
     destFolder: '',
     processing: false,
-    lang: 'es' // 'es' | 'en'
+    lang: normalizeLang(localStorage.getItem(languageStorageKey))
 };
 
 const tabFiles = document.getElementById('tab-files');
@@ -47,113 +48,8 @@ const btnDonate = document.getElementById('btn-donate');
 const DONATE_URL = 'https://ko-fi.com/bchosoft';
 
 // Language switch buttons
-const btnLangEs = document.getElementById('lang-es');
-const btnLangEn = document.getElementById('lang-en');
-
-const translations = {
-    es: {
-        appSubtitle: 'by Bcho 🎸 <span class="copyleft">&copy;</span> 2026',
-        tabFiles: 'Seleccionar Archivos',
-        tabFolder: 'Seleccionar Carpeta',
-        sourceLabelFiles: 'Presets a liberar',
-        sourceLabelFolder: 'Carpeta origen',
-        fileSelectTitle: 'Elige archivos sueltos',
-        fileSelectTitleActive: (count) => `${count} archivos seleccionados`,
-        fileSelectDesc: 'Haz clic aquí para seleccionar archivos .txp individuales',
-        fileSelectDescActive: 'Haz clic para cambiar la selección',
-        folderSelectTitle: 'Elige una carpeta',
-        folderSelectTitleActive: 'Carpeta seleccionada',
-        folderSelectDesc: 'Se procesarán todos los archivos .txp recursivamente',
-        destLabel: 'Carpeta de Destino',
-        destNotSelected: 'No seleccionada',
-        btnChangeDest: 'Cambiar...',
-        btnConvert: 'LIBERAR PRESETS',
-        progressInit: 'Iniciando liberación...',
-        progressPrep: 'Preparando archivos...',
-        progressTitle: (idx, tot) => `Liberando preset ${idx} de ${tot}`,
-        logStart: (mode) => `[INICIO] Comenzando liberación en modo: ${mode === 'files' ? 'Archivos seleccionados' : 'Carpeta recursiva'}`,
-        logDest: (dir) => `[INFO] Carpeta destino: ${dir}`,
-        logFinish: (count) => `[FIN] Liberación terminada. ${count} presets guardados con éxito.`,
-        logCritical: (err) => `[ERROR CRÍTICO] ${err}`,
-        logProcessing: (file) => `[PROCESANDO] ${file}...`,
-        logSuccess: (file) => `[OK] ${file} -> Liberado con éxito`,
-        logError: (file, err) => `[ERROR] ${file}: ${err}`,
-        donateBtn: '☕ Donar',
-        donateTooltip: 'Apoya el proyecto en Ko-fi',
-        reminderMsg: 'Recuerda que por una contribución mínima de 2 euros puedes tener la versión completa. ;-)',
-        reminderCloseIn: (s) => `Cerrar en ${s} s`,
-        reminderCloseBtn: 'Cerrar',
-        reminderCanClose: 'Ya puedes cerrar esta ventana',
-        successTitle: '¡Liberación Completada!',
-        successSummaryFiles: (count, total, dest) => `Se han procesado ${count} de ${total} archivos correctamente.\nDestino: ${dest}`,
-        successSummaryFolder: (count, dest) => `Se han procesado ${count} archivos .txp correctamente.\nDestino: ${dest}`,
-        failTitle: 'La liberación falló',
-        btnDone: 'Aceptar',
-        helpTitle: 'Ayuda - TXP LiBeRaTor',
-        helpBody: `
-            <p><strong>TXP LiBeRaTor (by Bcho)</strong> es una herramienta independiente y automatizada para liberar presets de Tonex (archivos <code>.txp</code>).</p>
-            <h4>Modo de Uso:</h4>
-            <ul>
-                <li><strong>Liberación de archivos individuales:</strong> Puedes liberar presets seleccionando uno o más archivos <code>.txp</code> haciendo clic en la zona destinada a ello, o simplemente arrastrándolos y soltándolos directamente desde el Explorador de Windows sobre dicha área.</li>
-                <li><strong>Liberación de carpetas:</strong> Al seleccionar una carpeta de origen, la herramienta buscará y procesará de forma automática todos los archivos <code>.txp</code> contenidos en ella, a cualquier nivel de profundidad (de forma recursiva).</li>
-                <li><strong>Carpeta de salida automática:</strong> Si no especificas una carpeta de destino, se creará una carpeta de forma automática al mismo nivel de la carpeta de origen (o del directorio que contiene los archivos seleccionados) añadiendo el sufijo <code> - Bcho</code> al nombre original.</li>
-            </ul>
-            <h4>Donación y límites:</h4>
-            <p>Las herramientas usadas para desarrollar esta app no son gratuitas. Por eso, <strong>sin donación el uso está limitado a 3 conversiones por sesión</strong>. Al iniciar la app verás una pantalla con un código; si donas en Ko-fi <strong>pegando ese código en el mensaje</strong>, se eliminan la pantalla y todos los límites de forma permanente en ese equipo. Después de donar, pulsa <em>«Ya he donado»</em> para activar el desbloqueo.</p>
-        `
-    },
-    en: {
-        appSubtitle: 'by Bcho 🎸 <span class="copyleft">&copy;</span> 2026',
-        tabFiles: 'Select Files',
-        tabFolder: 'Select Folder',
-        sourceLabelFiles: 'Presets to liberate',
-        sourceLabelFolder: 'Source folder',
-        fileSelectTitle: 'Choose loose files',
-        fileSelectTitleActive: (count) => `${count} files selected`,
-        fileSelectDesc: 'Click here to select individual .txp files',
-        fileSelectDescActive: 'Click to change selection',
-        folderSelectTitle: 'Choose a folder',
-        folderSelectTitleActive: 'Folder selected',
-        folderSelectDesc: 'All .txp files will be processed recursively',
-        destLabel: 'Destination Directory',
-        destNotSelected: 'Not selected',
-        btnChangeDest: 'Change...',
-        btnConvert: 'LIBERATE PRESETS',
-        progressInit: 'Starting liberation...',
-        progressPrep: 'Preparing files...',
-        progressTitle: (idx, tot) => `Liberating preset ${idx} of ${tot}`,
-        logStart: (mode) => `[START] Starting liberation in mode: ${mode === 'files' ? 'Files' : 'Folder'}`,
-        logDest: (dir) => `[INFO] Destination directory: ${dir}`,
-        logFinish: (count) => `[END] Liberation completed. ${count} presets saved successfully.`,
-        logCritical: (err) => `[CRITICAL ERROR] ${err}`,
-        logProcessing: (file) => `[PROCESSING] ${file}...`,
-        logSuccess: (file) => `[OK] ${file} -> Liberated successfully`,
-        logError: (file, err) => `[ERROR] ${file}: ${err}`,
-        donateBtn: '☕ Donate',
-        donateTooltip: 'Support the project on Ko-fi',
-        reminderMsg: 'Remember that for a minimum contribution of €2 you can get the full version. ;-)',
-        reminderCloseIn: (s) => `Close in ${s} s`,
-        reminderCloseBtn: 'Close',
-        reminderCanClose: 'You can now close this window',
-        successTitle: 'Liberation Completed!',
-        successSummaryFiles: (count, total, dest) => `Processed ${count} of ${total} files successfully.\nDestination: ${dest}`,
-        successSummaryFolder: (count, dest) => `Processed ${count} .txp files successfully.\nDestination: ${dest}`,
-        failTitle: 'Liberation failed',
-        btnDone: 'Done',
-        helpTitle: 'Help - TXP LiBeRaTor',
-        helpBody: `
-            <p><strong>TXP LiBeRaTor (by Bcho)</strong> is an independent and automated tool to liberate Tonex presets (<code>.txp</code> files).</p>
-            <h4>How to Use:</h4>
-            <ul>
-                <li><strong>Individual Files:</strong> You can liberate presets by selecting one or more <code>.txp</code> files from the designated selection area, or by simply dragging and dropping them from Windows Explorer directly onto it.</li>
-                <li><strong>Folder Conversion:</strong> When selecting a source folder, the tool will automatically find and process all <code>.txp</code> files contained within it, at any level of depth (recursively).</li>
-                <li><strong>Default Output Folder:</strong> If no destination folder is specified, a new folder will be automatically created in the same directory as the source (either the selected folder or the directory of the selected files), appending the suffix <code> - Bcho</code> to the original name.</li>
-            </ul>
-            <h4>Donation & limits:</h4>
-            <p>The tools used to build this app aren't free. Therefore, <strong>without a donation usage is limited to 3 conversions per session</strong>. On startup you'll see a screen with a code; if you donate on Ko-fi <strong>pasting that code in the message</strong>, the screen and all limits are removed permanently on that computer. After donating, click <em>"I've donated"</em> to activate the unlock.</p>
-        `
-    }
-};
+const langSelector = document.querySelector('.lang-selector');
+const langButtons = Array.from(document.querySelectorAll('.lang-btn'));
 
 function monetizationActive() {
     return !!licenseInfo.monetizationEnabled;
@@ -169,10 +65,27 @@ function restrictionsActive() {
         || (monetizationPartEnabled('restrictions') && !licenseInfo.unlocked);
 }
 
+function getVersionStatusHtml(lang, isFull) {
+    const texts = {
+        es: { full: 'Versión Completa', restricted: 'Versión Restringida' },
+        en: { full: 'Full Version', restricted: 'Restricted Version' },
+        gl: { full: 'Versión Completa', restricted: 'Versión Restrinxida' },
+        pt: { full: 'Versão Completa', restricted: 'Versão Restrita' },
+        it: { full: 'Versione Completa', restricted: 'Versione Limitata' },
+        fr: { full: 'Version Complète', restricted: 'Version Limitée' },
+        de: { full: 'Vollversion', restricted: 'Eingeschränkte Version' }
+    };
+    const t = texts[lang] || texts['es'];
+    const text = isFull ? t.full : t.restricted;
+    const color = isFull ? '#39ff14' : '#ef4444';
+    return `<div style="text-align: center; margin-bottom: 20px; font-size: 16px; font-weight: bold; color: ${color}; text-shadow: 0 0 10px ${isFull ? 'rgba(57,255,20,0.4)' : 'rgba(239,68,68,0.4)'};">[ ${text} ]</div>`;
+}
+
 function visibleHelpBody() {
-    const body = translations[state.lang].helpBody;
-    if (monetizationActive()) return body;
-    return body.replace(/\s*<h4>[^<]*(Donaci|Donation)[\s\S]*$/i, '');
+    const isFull = licenseInfo.unlocked || !monetizationActive();
+    const statusHtml = getVersionStatusHtml(state.lang, isFull);
+    const t = translations[state.lang];
+    return statusHtml + t.helpBodyCore + (monetizationActive() ? t.helpBodyDonation : '');
 }
 
 function applyMonetizationUI() {
@@ -187,9 +100,7 @@ function applyMonetizationUI() {
 }
 
 function offlineWarningText() {
-    return state.lang === 'es'
-        ? 'No se puede conectar con el servidor de control. La app funciona en modo sin conexión, sin pantalla de donación, con límite de 1 conversión por sesión.'
-        : 'The control server cannot be reached. The app is running offline, without donation overlay, limited to 1 conversion per session.';
+    return translations[state.lang].offlineWarning;
 }
 
 function showOfflineWarning(show) {
@@ -210,8 +121,10 @@ function showOfflineWarning(show) {
 
 function applyLanguage() {
     const t = translations[state.lang];
+    document.documentElement.lang = state.lang;
     
     document.getElementById('app-subtitle').innerHTML = t.appSubtitle;
+    if (langSelector) langSelector.setAttribute('aria-label', t.languageSelectorLabel);
     tabFiles.innerText = t.tabFiles;
     tabFolder.innerText = t.tabFolder;
     
@@ -221,7 +134,7 @@ function applyLanguage() {
         if (state.selectedFiles.length > 0) {
             fileSelector.querySelector('h3').innerText = t.fileSelectTitleActive(state.selectedFiles.length);
             fileSelector.querySelector('p').innerText = t.fileSelectDescActive;
-            selectionPathText.innerText = `${state.lang === 'es' ? 'Origen' : 'Source'}: ${state.selectedFiles[0]}`;
+            selectionPathText.innerText = `${t.selectionSourcePrefix}: ${state.selectedFiles[0]}`;
         } else {
             fileSelector.querySelector('h3').innerText = t.fileSelectTitle;
             fileSelector.querySelector('p').innerText = t.fileSelectDesc;
@@ -230,14 +143,14 @@ function applyLanguage() {
         if (state.selectedFolder) {
             folderSelector.querySelector('h3').innerText = t.folderSelectTitleActive;
             folderSelector.querySelector('p').innerText = state.selectedFolder;
-            selectionPathText.innerText = `${state.lang === 'es' ? 'Ruta' : 'Path'}: ${state.selectedFolder}`;
+            selectionPathText.innerText = `${t.selectionPathPrefix}: ${state.selectedFolder}`;
         } else {
             folderSelector.querySelector('h3').innerText = t.folderSelectTitle;
             folderSelector.querySelector('p').innerText = t.folderSelectDesc;
         }
     }
     
-    const destLabel = document.querySelector('.section:nth-of-type(2) .section-label');
+    const destLabel = document.getElementById('dest-label');
     if (destLabel) destLabel.innerText = t.destLabel;
     
     if (state.destFolder) {
@@ -252,12 +165,47 @@ function applyLanguage() {
     btnConvert.innerText = t.btnConvert;
     btnCloseProgress.innerText = t.btnDone;
 
-    btnDonate.innerText = t.donateBtn;
-    btnDonate.title = t.donateTooltip;
+function getSupportProjectText(lang) {
+    const texts = {
+        es: '☕ Apoya el proyecto',
+        en: '☕ Support the project',
+        gl: '☕ Apoia o proxecto',
+        pt: '☕ Apoie o projeto',
+        it: '☕ Sostieni il proyecto',
+        fr: '☕ Soutenez le projet',
+        de: '☕ Unterstütze das Projekt'
+    };
+    return texts[lang] || texts['es'];
+}
+
+function getDonateAndActivateText(lang) {
+    const texts = {
+        es: '☕ Dona y Activa',
+        en: '☕ Donate & Activate',
+        gl: '☕ Doa e Activa',
+        pt: '☕ Doe e Ative',
+        it: '☕ Dona e Attiva',
+        fr: '☕ Donnez et Activez',
+        de: '☕ Spenden & Aktivieren'
+    };
+    return texts[lang] || texts['es'];
+}
+
+    if (licenseInfo.unlocked) {
+        btnDonate.innerText = getSupportProjectText(state.lang);
+        btnDonate.title = getSupportProjectText(state.lang).replace('☕ ', '');
+    } else {
+        btnDonate.innerText = getDonateAndActivateText(state.lang);
+        btnDonate.title = getDonateAndActivateText(state.lang).replace('☕ ', '');
+    }
+    btnHelp.title = t.helpTooltip;
+
+    applyDonationLanguage();
     applyMonetizationUI();
     
-    btnLangEs.className = state.lang === 'es' ? 'lang-btn active' : 'lang-btn';
-    btnLangEn.className = state.lang === 'en' ? 'lang-btn active' : 'lang-btn';
+    langButtons.forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.lang === state.lang);
+    });
     
     document.getElementById('help-title').innerText = t.helpTitle;
     document.getElementById('help-body-text').innerHTML = visibleHelpBody();
@@ -269,6 +217,34 @@ function applyLanguage() {
             reminderClose.title = t.reminderCloseBtn;
             reminderClose.setAttribute('aria-label', t.reminderCloseBtn);
         }
+    }
+}
+
+function applyDonationLanguage() {
+    const t = translations[state.lang];
+    const title = document.getElementById('donation-title');
+    const text = document.querySelector('#donation-overlay .donation-text');
+    const important = document.querySelector('#donation-overlay .donation-token-label-important');
+    const supportLabel = document.querySelector('#donation-manual > .donation-token-label');
+    if (title) title.innerText = t.donationTitle;
+    if (text) text.innerHTML = t.donationBody;
+    if (important) important.innerText = t.donationImportant;
+    if (donationClose) donationClose.title = t.donationCloseTitle;
+    const copyToken = document.getElementById('btn-copy-token');
+    const copyHwid = document.getElementById('btn-copy-hwid');
+    if (copyToken) copyToken.title = t.donationCopyTitle;
+    if (copyHwid) copyHwid.title = t.donationCopyTitle;
+    if (donationDonate) donationDonate.innerText = t.donationDonateButton;
+    if (donationCheck) donationCheck.innerText = t.donationCheckButton;
+    if (donationManualToggle) donationManualToggle.innerText = t.donationManualToggle;
+    if (supportLabel) supportLabel.innerText = t.donationSupportId;
+    if (donationCodeInput) donationCodeInput.placeholder = t.donationCodePlaceholder;
+    if (donationApply) donationApply.innerText = t.donationApplyButton;
+    if (reminderClose) reminderClose.setAttribute('aria-label', t.reminderCloseBtn);
+
+    const hintEl = document.getElementById('donation-not-found-hint');
+    if (hintEl && hintEl.style.display !== 'none') {
+        hintEl.innerText = t.donationNotFoundHint || '';
     }
 }
 
@@ -310,7 +286,7 @@ function updateUI() {
                 const item = document.createElement('div');
                 item.className = 'file-item';
                 item.style.fontWeight = 'bold';
-                item.innerText = `... y ${state.selectedFiles.length - maxVisible} más`;
+                item.innerText = translations[state.lang].moreFiles(state.selectedFiles.length - maxVisible);
                 selectedFilesList.appendChild(item);
             }
         } else {
@@ -353,7 +329,7 @@ fileSelector.addEventListener('click', async () => {
         }
     } catch (err) {
         console.error(err);
-        alert(state.lang === 'es' ? "Error al seleccionar archivos: " + err.message : "Error selecting files: " + err.message);
+        alert(translations[state.lang].alertSelectFiles(err.message || err));
     }
 });
 
@@ -369,7 +345,7 @@ folderSelector.addEventListener('click', async () => {
         }
     } catch (err) {
         console.error(err);
-        alert(state.lang === 'es' ? "Error al seleccionar carpeta: " + err.message : "Error selecting folder: " + err.message);
+        alert(translations[state.lang].alertSelectFolder(err.message || err));
     }
 });
 
@@ -454,9 +430,7 @@ btnConvert.addEventListener('click', async () => {
             progressModal.classList.remove('active');
             showDonationOverlay('limit');
             donationStatus.style.color = 'var(--accent-orange)';
-            donationStatus.innerText = state.lang === 'es'
-                ? 'Has alcanzado el límite de 3 conversiones por sesión. Dona para uso ilimitado.'
-                : 'You reached the 3-conversions-per-session limit. Donate for unlimited use.';
+            donationStatus.innerText = translations[state.lang].donationLimitReached;
             return;
         }
 
@@ -470,7 +444,7 @@ btnConvert.addEventListener('click', async () => {
         successCard.querySelector('h3').innerText = t.failTitle;
         successIcon.innerText = "✗";
         successIcon.style.color = "var(--error-red)";
-        successSummary.innerText = `${state.lang === 'es' ? 'Error' : 'Error'}: ${errorMsg}`;
+        successSummary.innerText = `${t.errorLabel}: ${errorMsg}`;
     } finally {
         state.processing = false;
         updateUI();
@@ -511,20 +485,32 @@ function openDonationPage() {
     openExternal(licenseInfo.donateUrl);
 }
 
-btnDonate.addEventListener('click', openDonationPage);
+btnDonate.addEventListener('click', () => {
+    if (licenseInfo.unlocked) {
+        openDonationPage();
+    } else {
+        showDonationOverlay('manual');
+    }
+});
 
 // Language switcher handlers
-btnLangEs.addEventListener('click', () => {
-    if (state.processing) return;
-    state.lang = 'es';
-    updateUI();
+langButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+        if (state.processing) return;
+        state.lang = normalizeLang(btn.dataset.lang);
+        localStorage.setItem(languageStorageKey, state.lang);
+        setBackendLanguage(state.lang);
+        updateUI();
+    });
 });
 
-btnLangEn.addEventListener('click', () => {
-    if (state.processing) return;
-    state.lang = 'en';
-    updateUI();
-});
+function setBackendLanguage(lang) {
+    try {
+        if (window.go?.main?.App?.SetLanguage) {
+            window.go.main.App.SetLanguage(lang);
+        }
+    } catch (_) {}
+}
 
 // Subscribe to backend events
 if (window.runtime) {
@@ -581,7 +567,7 @@ async function handleDroppedPaths(paths) {
     } catch (err) {
         console.error(err);
         const msg = getErrorText(err);
-        alert(state.lang === 'es' ? "Error al procesar elementos arrastrados: " + msg : "Error processing dropped items: " + msg);
+        alert(translations[state.lang].alertDroppedPaths(msg));
     }
 }
 
@@ -697,8 +683,11 @@ function showDonationOverlay(mode) {
     donationToken.innerText = licenseInfo.token || '—';
     donationHwid.innerText = licenseInfo.hwid || '—';
     donationStatus.innerText = '';
+    const hintEl = document.getElementById('donation-not-found-hint');
+    if (hintEl) hintEl.style.display = 'none';
+    donationManualToggle.classList.remove('blink-highlight');
     donationOverlay.classList.add('active');
-    if (mode === 'limit') {
+    if (mode === 'limit' || mode === 'manual') {
         donationOverlay.classList.add('closable');
         donationCountdown.innerHTML = '';
         if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
@@ -826,7 +815,7 @@ function hideReminder() {
 function startCountdown(seconds) {
     let s = seconds;
     const render = () => {
-        donationCountdown.innerHTML = `Podrás usar la app en <span class="countdown-num">${s}</span> s  ·  You can use the app in <span class="countdown-num">${s}</span> s`;
+        donationCountdown.innerHTML = translations[state.lang].donationCountdown(s);
     };
     render();
     if (countdownTimer) clearInterval(countdownTimer);
@@ -848,7 +837,10 @@ function unlockSuccess() {
     if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
     donationOverlay.classList.add('closable');
     donationStatus.style.color = 'var(--success-green)';
-    donationStatus.innerText = '¡Donación verificada! Gracias 💚 · Donation verified! Thanks 💚';
+    donationStatus.innerText = translations[state.lang].donationVerified;
+    const hintEl = document.getElementById('donation-not-found-hint');
+    if (hintEl) hintEl.style.display = 'none';
+    donationManualToggle.classList.remove('blink-highlight');
     setTimeout(hideDonationOverlay, 1800);
 }
 
@@ -860,20 +852,23 @@ reminderClose.addEventListener('click', () => {
     }
 });
 
-donationManualToggle.addEventListener('click', () => donationManual.classList.toggle('open'));
+donationManualToggle.addEventListener('click', () => {
+    donationManual.classList.toggle('open');
+    donationManualToggle.classList.remove('blink-highlight');
+});
 
 donationApply.addEventListener('click', async () => {
     const code = (donationCodeInput.value || '').trim();
     if (!code) return;
     donationStatus.style.color = 'var(--text-secondary)';
-    donationStatus.innerText = 'Aplicando código… · Applying code…';
+    donationStatus.innerText = translations[state.lang].donationApplyingCode;
     try {
         const ok = await ApplyCode(code);
         if (ok) {
             unlockSuccess();
         } else {
             donationStatus.style.color = 'var(--error-red)';
-            donationStatus.innerText = 'Código no válido para este equipo. · Code not valid for this computer.';
+            donationStatus.innerText = translations[state.lang].donationInvalidCode;
         }
     } catch (err) {
         donationStatus.style.color = 'var(--error-red)';
@@ -883,14 +878,21 @@ donationApply.addEventListener('click', async () => {
 
 donationCheck.addEventListener('click', async () => {
     donationStatus.style.color = 'var(--text-secondary)';
-    donationStatus.innerText = 'Comprobando… · Checking…';
+    donationStatus.innerText = translations[state.lang].donationChecking;
+    const hintEl = document.getElementById('donation-not-found-hint');
+    if (hintEl) hintEl.style.display = 'none';
     try {
         const ok = await CheckDonation();
         if (ok) {
             unlockSuccess();
         } else {
             donationStatus.style.color = 'var(--accent-orange)';
-            donationStatus.innerText = 'Aún no consta tu donación. Espera unos segundos tras donar y reinténtalo. · Donation not found yet. Wait a few seconds after donating and retry.';
+            donationStatus.innerText = translations[state.lang].donationNotFound;
+            if (hintEl) {
+                hintEl.innerText = translations[state.lang].donationNotFoundHint || '';
+                hintEl.style.display = 'block';
+            }
+            donationManualToggle.classList.add('blink-highlight');
         }
     } catch (err) {
         donationStatus.style.color = 'var(--error-red)';
@@ -905,12 +907,8 @@ if (window.runtime) {
         if (info && info.skipped) {
             appendLog(
                 info.offline
-                    ? (state.lang === 'es'
-                        ? `[SIN CONEXIÓN] Se omitieron ${info.skipped} archivo(s). En modo sin conexión el límite es ${info.limit}/sesión.`
-                        : `[OFFLINE] Skipped ${info.skipped} file(s). Offline mode is limited to ${info.limit}/session.`)
-                    : state.lang === 'es'
-                    ? `[LÍMITE] Se omitieron ${info.skipped} archivo(s) por el límite gratuito (${info.limit}/sesión). Dona para uso ilimitado.`
-                    : `[LIMIT] Skipped ${info.skipped} file(s) due to the free limit (${info.limit}/session). Donate for unlimited use.`,
+                    ? translations[state.lang].limitSkippedOffline(info.skipped, info.limit)
+                    : translations[state.lang].limitSkippedFree(info.skipped, info.limit),
                 'error'
             );
         }
@@ -937,5 +935,6 @@ async function initLicense() {
 }
 
 // Initial UI load
+setBackendLanguage(state.lang);
 updateUI();
 initLicense();

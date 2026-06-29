@@ -11,23 +11,23 @@
             <!-- Header -->
             <div class="header">
                 <div class="logo-container">
-                    <img id="logo" alt="BCho Logo" />
+                    <img id="logo" alt="BCho" />
                 </div>
                 <div class="title-container">
                     <h1>TXP LiBeRaTor</h1>
-                    <p id="app-subtitle">Conversor independiente de presets TONEX</p>
+                    <p id="app-subtitle"></p>
                 </div>
                 <div class="header-controls">
-                    <button id="btn-donate" class="donate-btn" title="Apoya el proyecto en Ko-fi" style="display: none;">☕ Donar</button>
-                    <button id="btn-help" class="control-btn" title="Ayuda / Help">❓</button>
-                    <div class="lang-selector">
-                        <button id="lang-es" class="lang-btn active" title="Español">
+                    <button id="btn-donate" class="donate-btn" title="" style="display: none;"></button>
+                    <button id="btn-help" class="control-btn" title="">❓</button>
+                    <div class="lang-selector" aria-label="">
+                        <button id="lang-es" class="lang-btn active" data-lang="es" title="Español">
                             <svg viewBox="0 0 750 500" width="20" height="13" style="border-radius: 1px; display: block;">
                                 <rect width="750" height="500" fill="#c60b1e"/>
                                 <rect width="750" height="250" y="125" fill="#ffc400"/>
                             </svg>
                         </button>
-                        <button id="lang-en" class="lang-btn" title="English">
+                        <button id="lang-en" class="lang-btn" data-lang="en" title="English">
                             <svg viewBox="0 0 60 30" width="20" height="13" style="border-radius: 1px; display: block;">
                                 <rect width="60" height="30" fill="#012169"/>
                                 <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
@@ -36,38 +36,80 @@
                                 <path d="M30,0 L30,30 M0,15 L60,15" stroke="#C8102E" stroke-width="6"/>
                             </svg>
                         </button>
+                        <button id="lang-gl" class="lang-btn" data-lang="gl" title="Galego">
+                            <svg viewBox="0 0 60 30" width="20" height="13" style="border-radius: 1px; display: block;">
+                                <rect width="60" height="30" fill="#fff"/>
+                                <path d="M-4,31 L64,-1" stroke="#58a9df" stroke-width="8"/>
+                            </svg>
+                        </button>
+                        <button id="lang-pt" class="lang-btn dual-flag" data-lang="pt" title="Português / Brasileiro">
+                            <span class="flag-pair">
+                                <svg viewBox="0 0 60 30" width="16" height="13" style="border-radius: 1px; display: block;">
+                                    <rect width="24" height="30" fill="#006600"/>
+                                    <rect x="24" width="36" height="30" fill="#ff0000"/>
+                                    <circle cx="24" cy="15" r="6" fill="#ffcc00"/>
+                                    <circle cx="24" cy="15" r="4" fill="#ffffff"/>
+                                </svg>
+                                <svg viewBox="0 0 60 30" width="16" height="13" style="border-radius: 1px; display: block;">
+                                    <rect width="60" height="30" fill="#009b3a"/>
+                                    <path d="M30,4 L54,15 L30,26 L6,15 Z" fill="#ffdf00"/>
+                                    <circle cx="30" cy="15" r="7" fill="#002776"/>
+                                </svg>
+                            </span>
+                        </button>
+                        <button id="lang-it" class="lang-btn" data-lang="it" title="Italiano">
+                            <svg viewBox="0 0 60 30" width="20" height="13" style="border-radius: 1px; display: block;">
+                                <rect width="20" height="30" fill="#009246"/>
+                                <rect x="20" width="20" height="30" fill="#fff"/>
+                                <rect x="40" width="20" height="30" fill="#ce2b37"/>
+                            </svg>
+                        </button>
+                        <button id="lang-fr" class="lang-btn" data-lang="fr" title="Français">
+                            <svg viewBox="0 0 60 30" width="20" height="13" style="border-radius: 1px; display: block;">
+                                <rect width="20" height="30" fill="#0055a4"/>
+                                <rect x="20" width="20" height="30" fill="#fff"/>
+                                <rect x="40" width="20" height="30" fill="#ef4135"/>
+                            </svg>
+                        </button>
+                        <button id="lang-de" class="lang-btn" data-lang="de" title="Deutsch">
+                            <svg viewBox="0 0 60 30" width="20" height="13" style="border-radius: 1px; display: block;">
+                                <rect width="60" height="10" fill="#000"/>
+                                <rect y="10" width="60" height="10" fill="#dd0000"/>
+                                <rect y="20" width="60" height="10" fill="#ffce00"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- Mode Selector Tabs -->
             <div class="tabs">
-                <button class="tab-btn active" id="tab-files">Seleccionar Archivos</button>
-                <button class="tab-btn" id="tab-folder">Seleccionar Carpeta</button>
+                <button class="tab-btn active" id="tab-files"></button>
+                <button class="tab-btn" id="tab-folder"></button>
             </div>
 
             <!-- Main Form Section -->
             <div class="section">
-                <span class="section-label" id="source-label">Presets a convertir</span>
+                <span class="section-label" id="source-label"></span>
                 
                 <!-- Selector box for Files -->
                 <div class="selector-box" id="file-selector">
                     <div class="icon">📂</div>
-                    <h3>Elige archivos sueltos</h3>
-                    <p>Haz clic aquí para seleccionar archivos .txp individuales</p>
+                    <h3></h3>
+                    <p></p>
                 </div>
 
                 <!-- Selector box for Folder (hidden by default) -->
                 <div class="selector-box" id="folder-selector" style="display: none;">
                     <div class="icon">📁</div>
-                    <h3>Elige una carpeta</h3>
-                    <p>Se procesarán todos los archivos .txp recursivamente</p>
+                    <h3></h3>
+                    <p></p>
                 </div>
 
                 <!-- Selection Status / Info -->
                 <div id="selection-info" style="display: none;">
                     <div class="path-display" style="margin-bottom: 10px;">
-                        <span class="path-text" id="selection-path-text">No hay selección</span>
+                        <span class="path-text" id="selection-path-text"></span>
                     </div>
                     <div class="file-list" id="selected-files-list" style="display: none;">
                         <!-- Selected files list goes here -->
@@ -77,23 +119,23 @@
 
             <!-- Destination Directory Section -->
             <div class="section">
-                <span class="section-label">Carpeta de Destino</span>
+                <span class="section-label" id="dest-label"></span>
                 <div class="path-display">
-                    <span class="path-text" id="dest-path-text">No seleccionada</span>
-                    <button class="btn-secondary" id="btn-change-dest">Cambiar...</button>
+                    <span class="path-text" id="dest-path-text"></span>
+                    <button class="btn-secondary" id="btn-change-dest"></button>
                 </div>
             </div>
 
             <!-- Action Bar -->
             <div class="action-bar">
-                <button class="btn-primary" id="btn-convert" disabled>INICIAR CONVERSIÓN BCHO</button>
+                <button class="btn-primary" id="btn-convert" disabled></button>
             </div>
 
             <!-- Progress Overlay -->
             <div class="progress-overlay" id="progress-modal">
                 <div class="progress-header" id="progress-header-section">
-                    <h2 id="progress-title">Procesando presets...</h2>
-                    <p id="progress-subtitle">Preparando archivos</p>
+                    <h2 id="progress-title"></h2>
+                    <p id="progress-subtitle"></p>
                 </div>
 
                 <!-- Progress Bar -->
@@ -109,9 +151,9 @@
                 <!-- Success / Completion Card -->
                 <div class="success-card" id="success-card">
                     <div class="success-icon">✓</div>
-                    <h3>¡Conversión Completada!</h3>
-                    <p id="success-summary">Se han convertido todos los presets con éxito.</p>
-                    <button class="btn-done" id="btn-close-progress">Aceptar</button>
+                    <h3></h3>
+                    <p id="success-summary"></p>
+                    <button class="btn-done" id="btn-close-progress"></button>
                 </div>
             </div>
         </div>
@@ -121,7 +163,7 @@
     <div class="help-overlay" id="help-modal">
         <div class="help-content">
             <button class="help-close" id="btn-close-help">×</button>
-            <h2 id="help-title">Ayuda - TXP LiBeRaTor</h2>
+            <h2 id="help-title"></h2>
             <div class="help-body" id="help-body-text">
                 <!-- Content loaded dynamically -->
             </div>
@@ -131,44 +173,102 @@
     <!-- Donation Overlay -->
     <div class="donation-overlay" id="donation-overlay">
         <div class="donation-card">
-            <button class="donation-close" id="donation-close" title="Cerrar / Close">×</button>
+            <button class="donation-close" id="donation-close" title="">×</button>
+            <div class="donation-lang-container">
+                <div class="lang-selector donation-lang-selector" aria-label="">
+                    <button class="lang-btn active" data-lang="es" title="Español">
+                        <svg viewBox="0 0 750 500" width="20" height="13" style="border-radius: 1px; display: block;">
+                            <rect width="750" height="500" fill="#c60b1e"/>
+                            <rect width="750" height="250" y="125" fill="#ffc400"/>
+                        </svg>
+                    </button>
+                    <button class="lang-btn" data-lang="en" title="English">
+                        <svg viewBox="0 0 60 30" width="20" height="13" style="border-radius: 1px; display: block;">
+                            <rect width="60" height="30" fill="#012169"/>
+                            <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+                            <path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="2"/>
+                            <path d="M30,0 L30,30 M0,15 L60,15" stroke="#fff" stroke-width="10"/>
+                            <path d="M30,0 L30,30 M0,15 L60,15" stroke="#C8102E" stroke-width="6"/>
+                        </svg>
+                    </button>
+                    <button class="lang-btn" data-lang="gl" title="Galego">
+                        <svg viewBox="0 0 60 30" width="20" height="13" style="border-radius: 1px; display: block;">
+                            <rect width="60" height="30" fill="#fff"/>
+                            <path d="M-4,31 L64,-1" stroke="#58a9df" stroke-width="8"/>
+                        </svg>
+                    </button>
+                    <button class="lang-btn dual-flag" data-lang="pt" title="Português / Brasileiro">
+                        <span class="flag-pair">
+                            <svg viewBox="0 0 60 30" width="16" height="13" style="border-radius: 1px; display: block;">
+                                <rect width="24" height="30" fill="#006600"/>
+                                <rect x="24" width="36" height="30" fill="#ff0000"/>
+                                <circle cx="24" cy="15" r="6" fill="#ffcc00"/>
+                                <circle cx="24" cy="15" r="4" fill="#ffffff"/>
+                            </svg>
+                            <svg viewBox="0 0 60 30" width="16" height="13" style="border-radius: 1px; display: block;">
+                                <rect width="60" height="30" fill="#009b3a"/>
+                                <path d="M30,4 L54,15 L30,26 L6,15 Z" fill="#ffdf00"/>
+                                <circle cx="30" cy="15" r="7" fill="#002776"/>
+                            </svg>
+                        </span>
+                    </button>
+                    <button class="lang-btn" data-lang="it" title="Italiano">
+                        <svg viewBox="0 0 60 30" width="20" height="13" style="border-radius: 1px; display: block;">
+                            <rect width="20" height="30" fill="#009246"/>
+                            <rect x="20" width="20" height="30" fill="#fff"/>
+                            <rect x="40" width="20" height="30" fill="#ce2b37"/>
+                        </svg>
+                    </button>
+                    <button class="lang-btn" data-lang="fr" title="Français">
+                        <svg viewBox="0 0 60 30" width="20" height="13" style="border-radius: 1px; display: block;">
+                            <rect width="20" height="30" fill="#0055a4"/>
+                            <rect x="20" width="20" height="30" fill="#fff"/>
+                            <rect x="40" width="20" height="30" fill="#ef4135"/>
+                        </svg>
+                    </button>
+                    <button class="lang-btn" data-lang="de" title="Deutsch">
+                        <svg viewBox="0 0 60 30" width="20" height="13" style="border-radius: 1px; display: block;">
+                            <rect width="60" height="10" fill="#000"/>
+                            <rect y="10" width="60" height="10" fill="#dd0000"/>
+                            <rect y="20" width="60" height="10" fill="#ffce00"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
             <div class="donation-coffee">☕</div>
-            <h2 id="donation-title">Apoya el proyecto · Support the project</h2>
+            <h2 id="donation-title"></h2>
 
             <div class="donation-text">
-                <p>🇪🇸 Las herramientas usadas para desarrollar esta app <strong>no son gratuitas</strong>. Si te resulta útil, considera una donación. Sin donación, el uso se limita a <strong>3 conversiones por sesión</strong>. Al donar desaparece esta pantalla y <strong>todos los límites</strong>, para siempre, en este equipo.</p>
-                <p>🇬🇧 The tools used to build this app <strong>aren't free</strong>. If you find it useful, please consider donating. Without a donation, usage is limited to <strong>3 conversions per session</strong>. Donating removes this screen and <strong>all limits</strong>, forever, on this computer.</p>
             </div>
 
             <div class="donation-token-box">
                 <span class="donation-token-label donation-token-label-important">
-                    <span class="donation-token-label-es">IMPORTANTE: Pega este código en el mensaje de tu donación</span>
-                    <span class="donation-token-label-en">IMPORTANT: Paste this code in your donation message</span>
                 </span>
                 <div class="donation-token-row">
                     <code id="donation-token">—</code>
-                    <button id="btn-copy-token" class="btn-copy" title="Copiar / Copy">📋</button>
+                    <button id="btn-copy-token" class="btn-copy" title="">📋</button>
                 </div>
             </div>
 
             <div class="donation-actions">
-                <button id="donation-donate" class="donate-btn">☕ Donar / Donate</button>
-                <button id="donation-check" class="btn-secondary">Ya he donado / I've donated</button>
+                <button id="donation-donate" class="donate-btn"></button>
+                <button id="donation-check" class="btn-secondary"></button>
             </div>
             <p id="donation-status" class="donation-status"></p>
+            <p id="donation-not-found-hint" class="donation-not-found-hint" style="display: none;"></p>
 
             <div class="donation-countdown" id="donation-countdown"></div>
 
-            <button class="donation-manual-toggle" id="donation-manual-toggle">¿Tienes un código? · Have a code?</button>
+            <button class="donation-manual-toggle" id="donation-manual-toggle"></button>
             <div class="donation-manual" id="donation-manual">
-                <span class="donation-token-label">ID de soporte (envíalo si necesitas un código) · Support ID (send it if you need a code):</span>
+                <span class="donation-token-label"></span>
                 <div class="donation-token-row" style="margin: 8px 0 12px;">
                     <code id="donation-hwid" class="donation-hwid" style="flex: 1; margin: 0; text-align: left;">—</code>
-                    <button id="btn-copy-hwid" class="btn-copy" title="Copiar / Copy">📋</button>
+                    <button id="btn-copy-hwid" class="btn-copy" title="">📋</button>
                 </div>
                 <div class="donation-manual-row">
-                    <input type="text" id="donation-code-input" class="donation-code-input" placeholder="Pega aquí tu código · Paste your code here" />
-                    <button id="donation-apply" class="btn-secondary">Aplicar · Apply</button>
+                    <input type="text" id="donation-code-input" class="donation-code-input" placeholder="" />
+                    <button id="donation-apply" class="btn-secondary"></button>
                 </div>
             </div>
         </div>
@@ -181,7 +281,7 @@
             <div id="reminder-text" class="reminder-text"></div>
             <div id="reminder-countdown" class="reminder-countdown"></div>
             <div id="reminder-close-hint" class="reminder-close-hint"></div>
-            <button id="reminder-close" class="reminder-close-btn" disabled aria-label="Cerrar">×</button>
+            <button id="reminder-close" class="reminder-close-btn" disabled aria-label="">×</button>
         </div>
     </div>
 

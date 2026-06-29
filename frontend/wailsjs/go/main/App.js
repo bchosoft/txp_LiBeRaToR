@@ -45,3 +45,7 @@ export function SelectFiles() {
 export function SelectFolder() {
   return window['go']['main']['App']['SelectFolder']();
 }
+
+export function SetLanguage(arg1) {
+  return window['go']['main']['App']['SetLanguage'](arg1);
+}

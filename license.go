@@ -232,14 +232,14 @@ func (a *App) GetLicenseInfo() LicenseInfo {
 func (a *App) ApplyCode(code string) (bool, error) {
 	h, err := hardwareID()
 	if err != nil {
-		return false, err
+		return false, errors.New(a.uiText("no se pudo obtener el identificador del equipo", "could not get this computer's identifier", "non se puido obter o identificador do equipo", "nao foi possivel obter o identificador deste computador", "impossibile ottenere l'identificatore del computer", "impossible d'obtenir l'identifiant de cet ordinateur", "Computerkennung konnte nicht ermittelt werden"))
 	}
 	code = strings.TrimSpace(code)
 	if code == "" {
-		return false, errors.New("código vacío")
+		return false, errors.New(a.uiText("codigo vacio", "empty code", "codigo baleiro", "codigo vazio", "codice vuoto", "code vide", "leerer Code"))
 	}
 	if !verifyLicense(h, code) {
-		return false, errors.New("el código no es válido para este equipo")
+		return false, errors.New(a.uiText("el codigo no es valido para este equipo", "the code is not valid for this computer", "o codigo non e valido para este equipo", "o codigo nao e valido para este computador", "il codice non e valido per questo computer", "le code n'est pas valide pour cet ordinateur", "der Code ist fuer diesen Computer nicht gueltig"))
 	}
 	if err := saveLicense(code); err != nil {
 		return false, err
@@ -279,7 +279,7 @@ func (a *App) CheckDonation() (bool, error) {
 	}
 	h, err := hardwareID()
 	if err != nil {
-		return false, err
+		return false, errors.New(a.uiText("no se pudo obtener el identificador del equipo", "could not get this computer's identifier", "non se puido obter o identificador do equipo", "nao foi possivel obter o identificador deste computador", "impossibile ottenere l'identificatore del computer", "impossible d'obtenir l'identifiant de cet ordinateur", "Computerkennung konnte nicht ermittelt werden"))
 	}
 	u := licenseServerURL + "/redeem?app=" + appCode + "&hwid=" + url.QueryEscape(h)
 	client := &http.Client{Timeout: 15 * time.Second}
@@ -295,13 +295,13 @@ func (a *App) CheckDonation() (bool, error) {
 		License string `json:"license"`
 	}
 	if err := json.Unmarshal(body, &r); err != nil {
-		return false, errors.New("respuesta del servidor no válida")
+		return false, errors.New(a.uiText("respuesta del servidor no valida", "invalid server response", "resposta do servidor non valida", "resposta do servidor invalida", "risposta del server non valida", "reponse du serveur non valide", "ungueltige Serverantwort"))
 	}
 	if !r.Paid {
 		return false, nil
 	}
 	if r.License == "" || !verifyLicense(h, r.License) {
-		return false, errors.New("la licencia recibida no es válida")
+		return false, errors.New(a.uiText("la licencia recibida no es valida", "received license is not valid", "a licenza recibida non e valida", "a licenca recebida nao e valida", "la licenza ricevuta non e valida", "la licence recue n'est pas valide", "empfangene Lizenz ist nicht gueltig"))
 	}
 	if err := saveLicense(r.License); err != nil {
 		return false, err

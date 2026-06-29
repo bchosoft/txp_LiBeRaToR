@@ -25,6 +25,7 @@ type App struct {
 	monetizationLoaded bool
 	monetizationConfig MonetizationConfig
 	conversionsDone    int // successful conversions used this session (free tier)
+	uiLang             string
 }
 
 // errDonationLimit is returned when the free per-session limit is exhausted.
@@ -67,7 +68,50 @@ func (a *App) addConversions(n int) {
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{}
+	return &App{uiLang: "es"}
+}
+
+// SetLanguage keeps backend-owned dialogs and errors aligned with the frontend.
+func (a *App) SetLanguage(lang string) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	switch strings.ToLower(lang) {
+	case "es", "en", "gl", "pt", "it", "fr", "de":
+		a.uiLang = strings.ToLower(lang)
+	default:
+		a.uiLang = "es"
+	}
+}
+
+func (a *App) uiText(es, en string, rest ...string) string {
+	a.mu.Lock()
+	lang := a.uiLang
+	a.mu.Unlock()
+	switch lang {
+	case "en":
+		return en
+	case "gl":
+		if len(rest) > 0 {
+			return rest[0]
+		}
+	case "pt":
+		if len(rest) > 1 {
+			return rest[1]
+		}
+	case "it":
+		if len(rest) > 2 {
+			return rest[2]
+		}
+	case "fr":
+		if len(rest) > 3 {
+			return rest[3]
+		}
+	case "de":
+		if len(rest) > 4 {
+			return rest[4]
+		}
+	}
+	return es
 }
 
 // startup is called when the app starts. The context is saved
@@ -98,7 +142,7 @@ type DropResult struct {
 // ProcessDroppedPaths comprueba las rutas arrastradas y devuelve los archivos o carpeta según el modo
 func (a *App) ProcessDroppedPaths(paths []string, mode string) (*DropResult, error) {
 	if len(paths) == 0 {
-		return nil, fmt.Errorf("no se recibieron rutas")
+		return nil, fmt.Errorf("%s", a.uiText("no se recibieron rutas", "no paths received", "non se recibiron rutas", "nenhum caminho recebido", "nessun percorso ricevuto", "aucun chemin reçu", "keine Pfade empfangen"))
 	}
 
 	if mode == "files" {
@@ -110,7 +154,7 @@ func (a *App) ProcessDroppedPaths(paths []string, mode string) (*DropResult, err
 			}
 		}
 		if len(files) == 0 {
-			return nil, fmt.Errorf("no se encontraron archivos .txp válidos")
+			return nil, fmt.Errorf("%s", a.uiText("no se encontraron archivos .txp validos", "no valid .txp files found", "non se atoparon ficheiros .txp validos", "nenhum arquivo .txp valido encontrado", "nessun file .txp valido trovato", "aucun fichier .txp valide trouve", "keine gueltigen .txp-Dateien gefunden"))
 		}
 		// El directorio padre del primer archivo determina la ruta por defecto
 		parentDir := filepath.Dir(files[0])
@@ -143,10 +187,10 @@ func (a *App) ProcessDroppedPaths(paths []string, mode string) (*DropResult, err
 // SelectFiles abre un diálogo para seleccionar archivos .txp
 func (a *App) SelectFiles() (*FileSelectionResult, error) {
 	files, err := wruntime.OpenMultipleFilesDialog(a.ctx, wruntime.OpenDialogOptions{
-		Title: "Selecciona archivos .txp",
+		Title: a.uiText("Selecciona archivos .txp", "Select .txp files", "Selecciona ficheiros .txp", "Selecione arquivos .txp", "Seleziona file .txp", "Selectionnez des fichiers .txp", ".txp-Dateien auswaehlen"),
 		Filters: []wruntime.FileFilter{
-			{DisplayName: "Presets de Tonex (*.txp)", Pattern: "*.txp"},
-			{DisplayName: "Todos los archivos (*.*)", Pattern: "*.*"},
+			{DisplayName: a.uiText("Presets de Tonex (*.txp)", "Tonex presets (*.txp)", "Presets de Tonex (*.txp)", "Presets do Tonex (*.txp)", "Preset Tonex (*.txp)", "Presets Tonex (*.txp)", "Tonex-Presets (*.txp)"), Pattern: "*.txp"},
+			{DisplayName: a.uiText("Todos los archivos (*.*)", "All files (*.*)", "Todos os ficheiros (*.*)", "Todos os arquivos (*.*)", "Tutti i file (*.*)", "Tous les fichiers (*.*)", "Alle Dateien (*.*)"), Pattern: "*.*"},
 		},
 	})
 	if err != nil {
@@ -169,7 +213,7 @@ func (a *App) SelectFiles() (*FileSelectionResult, error) {
 // SelectFolder abre un diálogo para seleccionar una carpeta origen
 func (a *App) SelectFolder() (*FolderSelectionResult, error) {
 	folder, err := wruntime.OpenDirectoryDialog(a.ctx, wruntime.OpenDialogOptions{
-		Title: "Selecciona carpeta origen con archivos .txp",
+		Title: a.uiText("Selecciona carpeta origen con archivos .txp", "Select source folder with .txp files", "Selecciona o cartafol de orixe con ficheiros .txp", "Selecione a pasta de origem com arquivos .txp", "Seleziona la cartella di origine con file .txp", "Selectionnez le dossier source contenant des fichiers .txp", "Quellordner mit .txp-Dateien auswaehlen"),
 	})
 	if err != nil {
 		return nil, err
@@ -189,7 +233,7 @@ func (a *App) SelectFolder() (*FolderSelectionResult, error) {
 // SelectDestFolder abre un diálogo para seleccionar la carpeta de destino
 func (a *App) SelectDestFolder() (string, error) {
 	folder, err := wruntime.OpenDirectoryDialog(a.ctx, wruntime.OpenDialogOptions{
-		Title: "Selecciona carpeta de destino",
+		Title: a.uiText("Selecciona carpeta de destino", "Select destination folder", "Selecciona o cartafol de destino", "Selecione a pasta de destino", "Seleziona la cartella di destinazione", "Selectionnez le dossier de destination", "Zielordner auswaehlen"),
 	})
 	if err != nil {
 		return "", err
@@ -208,15 +252,15 @@ type ProgressEvent struct {
 // ProcessFiles convierte los archivos seleccionados y los guarda en destDir
 func (a *App) ProcessFiles(files []string, destDir string) (int, error) {
 	if len(files) == 0 {
-		return 0, fmt.Errorf("no hay archivos seleccionados")
+		return 0, fmt.Errorf("%s", a.uiText("no hay archivos seleccionados", "no files selected", "non hai ficheiros seleccionados", "nenhum arquivo selecionado", "nessun file selezionato", "aucun fichier selectionne", "keine Dateien ausgewaehlt"))
 	}
 	if destDir == "" {
-		return 0, fmt.Errorf("carpeta de destino no especificada")
+		return 0, fmt.Errorf("%s", a.uiText("carpeta de destino no especificada", "destination folder not specified", "cartafol de destino non especificado", "pasta de destino nao especificada", "cartella di destinazione non specificata", "dossier de destination non indique", "Zielordner nicht angegeben"))
 	}
 
 	// Crear carpeta destino si no existe
 	if err := os.MkdirAll(destDir, 0755); err != nil {
-		return 0, fmt.Errorf("no se pudo crear la carpeta de destino: %w", err)
+		return 0, fmt.Errorf("%s: %w", a.uiText("no se pudo crear la carpeta de destino", "could not create destination folder", "non se puido crear o cartafol de destino", "nao foi possivel criar a pasta de destino", "impossibile creare la cartella di destinazione", "impossible de creer le dossier de destination", "Zielordner konnte nicht erstellt werden"), err)
 	}
 
 	// Aplicar límite gratuito por sesión si no hay donación.
@@ -250,7 +294,7 @@ func (a *App) ProcessFiles(files []string, destDir string) (int, error) {
 			Status:      "processing",
 		})
 
-		err := convertFile(file, destPath)
+		err := a.convertFile(file, destPath)
 		if err != nil {
 			wruntime.EventsEmit(a.ctx, "conversion-progress", ProgressEvent{
 				CurrentFile: baseName,
@@ -286,7 +330,7 @@ func (a *App) ProcessFiles(files []string, destDir string) (int, error) {
 // ProcessFolder busca y convierte recursivamente todos los archivos .txp de srcDir a destDir
 func (a *App) ProcessFolder(srcDir string, destDir string) (int, error) {
 	if srcDir == "" || destDir == "" {
-		return 0, fmt.Errorf("rutas de origen o destino no especificadas")
+		return 0, fmt.Errorf("%s", a.uiText("rutas de origen o destino no especificadas", "source or destination paths not specified", "rutas de orixe ou destino non especificadas", "caminhos de origem ou destino nao especificados", "percorsi di origine o destinazione non specificati", "chemins source ou destination non indiques", "Quell- oder Zielpfade nicht angegeben"))
 	}
 
 	// Escanear primero para contar el total de archivos a procesar
@@ -301,7 +345,7 @@ func (a *App) ProcessFolder(srcDir string, destDir string) (int, error) {
 		return nil
 	})
 	if err != nil {
-		return 0, fmt.Errorf("error al escanear carpeta: %w", err)
+		return 0, fmt.Errorf("%s: %w", a.uiText("error al escanear carpeta", "error scanning folder", "erro ao escanear o cartafol", "erro ao escanear a pasta", "errore durante la scansione della cartella", "erreur lors de l'analyse du dossier", "Fehler beim Scannen des Ordners"), err)
 	}
 
 	if len(txpFiles) == 0 {
@@ -356,12 +400,12 @@ func (a *App) ProcessFolder(srcDir string, destDir string) (int, error) {
 				Index:       i + 1,
 				Total:       total,
 				Status:      "error",
-				ErrorMsg:    fmt.Sprintf("crear directorio: %s", err.Error()),
+				ErrorMsg:    fmt.Sprintf("%s: %s", a.uiText("crear directorio", "create directory", "crear directorio", "criar diretorio", "creare directory", "creation du dossier", "Ordner erstellen"), err.Error()),
 			})
 			continue
 		}
 
-		err = convertFile(file, destFilePath)
+		err = a.convertFile(file, destFilePath)
 		if err != nil {
 			wruntime.EventsEmit(a.ctx, "conversion-progress", ProgressEvent{
 				CurrentFile: relPath,
@@ -394,20 +438,20 @@ func (a *App) ProcessFolder(srcDir string, destDir string) (int, error) {
 	return successCount, nil
 }
 
-func convertFile(srcPath, destPath string) error {
+func (a *App) convertFile(srcPath, destPath string) error {
 	data, err := os.ReadFile(srcPath)
 	if err != nil {
-		return fmt.Errorf("read: %w", err)
+		return fmt.Errorf("%s: %w", a.uiText("no se pudo leer el archivo", "could not read file", "non se puido ler o ficheiro", "nao foi possivel ler o arquivo", "impossibile leggere il file", "impossible de lire le fichier", "Datei konnte nicht gelesen werden"), err)
 	}
 
 	converted, err := converter.ConvertTXP(data)
 	if err != nil {
-		return fmt.Errorf("convert: %w", err)
+		return fmt.Errorf("%s", a.uiText("no se pudo convertir el preset", "could not convert preset", "non se puido converter o preset", "nao foi possivel converter o preset", "impossibile convertire il preset", "impossible de convertir le preset", "Preset konnte nicht konvertiert werden"))
 	}
 
 	err = os.WriteFile(destPath, converted, 0644)
 	if err != nil {
-		return fmt.Errorf("write: %w", err)
+		return fmt.Errorf("%s: %w", a.uiText("no se pudo escribir el archivo", "could not write file", "non se puido escribir o ficheiro", "nao foi possivel gravar o arquivo", "impossibile scrivere il file", "impossible d'ecrire le fichier", "Datei konnte nicht geschrieben werden"), err)
 	}
 
 	return nil
